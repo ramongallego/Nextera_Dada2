@@ -1,0 +1,187 @@
+---
+title: "Create Illumina Sample Sheet and metadata"
+author: "Ramon Gallego"
+date: "11/8/2019"
+output: html_document
+params: 
+  Assay: "Nextera XT"
+  Index_Adapters: "Nextera XT Index Kit (96 Indexes 384 Samples)"
+  Cycles_per_pairend: 301
+  Set: 1
+  input.metadata: ../data_sub/metadata.csv
+  date: !r Sys.Date()
+  output_dir: ../data_sub/
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+```
+
+## What does this do
+
+It creates the Illumina Sample sheet and the `metadata.csv` file that you need for running the pipeline. You need to double check the output - weird things happen all the time.
+
+## Required input
+
+You need an input file with the following columns:
+
+  - Sample name
+  - Well in the 96-well plate used for the Nextera reaction. 
+  - PrimerF, 
+  - PrimerR,
+  - Plate, refers to the set of of nextera adapters used.
+
+
+## Loading the metadata you want to sequence
+
+```{r load metadata}
+
+init.metadata <- read_csv(params$input.metadata)
+
+init.metadata
+
+```
+
+### Check that the metadata has all needed fields
+
+```{r Check metadata}
+
+init.metadata %>% 
+  rownames_to_column("Sample_number") %>% 
+  mutate_all(as.character) %>% 
+  pivot_longer(-Sample_number, names_to = "Variable", values_to = "Value") %>% 
+  summarise(Sample_name = case_when(sum(str_detect(Variable, "Sample")) > 0 ~ "Present",
+                                 TRUE                                    ~ "Absent"),
+         Well        = case_when(sum(str_detect(Variable, "Well")) > 0 ~ "Present",
+                                 TRUE                                    ~ "Absent"),
+         Primer_F    = case_when(sum(str_detect(Variable, "Primer_F")) > 0 ~ "Present",
+                                 TRUE                                    ~ "Absent"),
+         Primer_R    = case_when(sum(str_detect(Variable, "Primer_R")) > 0 ~ "Present",
+                                 TRUE                                    ~ "Absent"),
+         
+         Plate       = case_when(sum(str_detect(Variable, "Plate")) > 0 ~ "Present",
+                                 TRUE                                    ~ "Absent")) -> Checks
+  
+
+
+
+
+```
+
+
+## Load the Illumina SampleSheet template
+
+
+
+```{r Loading SampleSheet}
+template.sample.sheet <- read_lines("../data_sub/SampleSheetLibPrep.csv")
+```
+
+Locate all the lines in which the new parameters are going to be written
+
+```{r locate terms}
+
+
+date.row  <- str_which(template.sample.sheet, "^\\Date")
+Assay.row <- str_which(template.sample.sheet, "^Assay")
+Index.row <- str_which(template.sample.sheet, "^Index Adapters")
+Reads.row <- str_which(template.sample.sheet, "^\\[Reads]")
+data.start <- str_which(template.sample.sheet, "^\\[Data]")
+
+
+```
+
+## Load the Illumina adapters
+
+```{r load nextera}
+
+Nextera_Adapters_i7 <- read_csv("../data_sub/Nextera_adapters_i7.csv")
+
+Nextera_Adapters_i5 <- read_csv("../data_sub/Nextera_adapters_i5.csv")
+
+Nextera_Adapters_i7 %>% 
+  mutate (Set = rep(c(1,2,3), each = 12)[1:26]) -> Nextera_Adapters_i7
+
+Nextera_Adapters_i5 %>% 
+  mutate (Set = rep(c(1,2,3), each = 8)[1:18]) -> Nextera_Adapters_i5
+
+```
+
+## Merge metadata with illumina adapters
+
+```{r merging}
+Nextera_Adapters_i7 %>% 
+  filter (Set == params$Set) %>% 
+  select(-Position, -`Bases in Adapter`, -Set) %>% 
+  right_join(init.metadata, by = c("Column")) %>% 
+  left_join(Nextera_Adapters_i5 %>% 
+              filter(Set == params$Set) %>% 
+              select(-Position, -`Bases in Adapter`)) %>% 
+  select(Sample, everything()) -> metadata
+
+
+```
+
+## Fill Illumina SampleSheet
+
+First with the parameters not linked with each sample
+
+```{r}
+template.sample.sheet[date.row] <- paste0("Date,",Sys.Date())
+
+template.sample.sheet[Assay.row] <- paste0("Assay," ,params$Assay)
+template.sample.sheet[Index.row] <- paste0("Index Adapters,",params$Index_Adapters)
+template.sample.sheet[Reads.row +2 ] <- template.sample.sheet[Reads.row + 4] <- params$Cycles_per_pairend
+```
+
+Then with the rest of the dataset
+
+```{r}
+sample.data <- tibble (Sample_Name = metadata$Sample,
+                      Sample_Plate = metadata$Set,
+                      Sample_Well = metadata$Well,
+                      I7_Index_ID = metadata$I7_Index_ID,
+                      index       = metadata$index,
+                      I5_Index_ID = metadata$I5_Index_ID,
+                      index2      = metadata$index2,
+                      Sample_Project ="", 
+                      Description = "") %>% 
+                rownames_to_column("Sample_ID")
+
+
+nsamples <- nrow(sample.data)
+template.sample.sheet <- template.sample.sheet[1:data.start]
+for (i in 1:nsamples){
+  
+  template.sample.sheet[i+data.start] <- paste(sample.data[i,], collapse = ",") 
+  
+  }
+template.sample.sheet
+
+write_lines(template.sample.sheet,  paste0(params$output_dir, "SampleSheet_",Sys.Date(),".csv"))
+```
+
+## Fill in metadata
+
+We are going to assume that the Illumina always returns files with the format `Sample_name` `_L001_R` [1-2] '_001.fastq`. So let's fill the metadata accordingly
+
+```{r}
+metadata %>% 
+  mutate(file1 = paste0(Sample, "_L001_R1_001.fastq"),
+         file2 = paste0(Sample, "_L001_R2_001.fastq")) %>% 
+  select(Sample,
+         file1,
+         file2,
+         I7_Index_ID,
+         I5_Index_ID,
+         Well,
+         Set,
+         Primer_F,
+         Primer_R) -> metadata
+
+
+write_csv(metadata, paste0(params$output_dir, "metadata_",Sys.Date(),".csv"))
+```
+
