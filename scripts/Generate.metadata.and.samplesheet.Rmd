@@ -9,7 +9,7 @@ params:
   Cycles_per_pairend: 301
   Set: 1
   input.metadata: ../data_sub/metadata.csv
-  date: !r Sys.Date()
+  date: !r Sys.Date()a
   output_dir: ../data_sub/
 ---
 
