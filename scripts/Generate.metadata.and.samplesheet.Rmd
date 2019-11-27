@@ -115,14 +115,9 @@ data.header <- str_which(template.sample.sheet, "^Sample_ID")
 
 Nextera_Adapters_i7 <- read_csv(here("data_sub","Nextera_adapters_i7.csv"))
 
-Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) %>%
-  mutate(I5_Index_ID = str_replace(I5_Index_ID, "S", "N"))
+Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) 
 
-Nextera_Adapters_i7 %>%
-  mutate (Set = rep(c(1,2,3), each = 12)[1:26]) -> Nextera_Adapters_i7
 
-Nextera_Adapters_i5 %>%
-  mutate (Set = rep(c(1,2,3), each = 8)[1:18]) -> Nextera_Adapters_i5
 
 ```
 
