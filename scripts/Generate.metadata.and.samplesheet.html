@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Ramon Gallego" />
@@ -269,7 +270,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -343,18 +343,6 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
@@ -381,6 +369,10 @@ $(document).ready(function () {
 </div>
 
 
+<div id="how-to-use-this" class="section level2">
+<h2>How to use this</h2>
+<p>To run this Rmarkdown, open it in Rstudio and from the knit drop-down menu, choose Knit with parameters</p>
+</div>
 <div id="what-does-this-do" class="section level2">
 <h2>What does this do</h2>
 <p>It creates the Illumina Sample sheet and the <code>metadata.csv</code> file that you need for running the pipeline. You need to double check the output - weird things happen all the time.</p>
@@ -393,7 +385,8 @@ $(document).ready(function () {
 <li>Well in the 96-well plate used for the Nextera reaction.</li>
 <li>PrimerF,</li>
 <li>PrimerR,</li>
-<li>Plate, refers to the set of of nextera adapters used.</li>
+<li>i7 Adapter (name) used to identify samples. Format is N7XX</li>
+<li>i5 Adapter (name) used to identify samples. Format is N5XX</li>
 </ul>
 </div>
 <div id="loading-the-metadata-you-want-to-sequence" class="section level2">
@@ -401,34 +394,35 @@ $(document).ready(function () {
 <pre class="r"><code>init.metadata &lt;- read_csv(params$input.metadata)</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
-##   Sample = col_character(),
-##   file1 = col_character(),
-##   file2 = col_character(),
-##   Primer_F = col_character(),
-##   Primer_R = col_character(),
+##   Sample_name = col_character(),
 ##   Well = col_character(),
+##   i5_Adapter = col_character(),
+##   i7_Adapter = col_character(),
+##   PrimerF = col_character(),
+##   PrimerR = col_character(),
 ##   Row = col_character(),
-##   Column = col_double()
+##   Column = col_double(),
+##   Qubit_Library = col_double(),
+##   `Molarity(514bp)` = col_double(),
+##   Vol_to_plate = col_double(),
+##   H2O_to_plate = col_double()
 ## )</code></pre>
 <pre class="r"><code>init.metadata</code></pre>
-<pre><code>## # A tibble: 15 x 8
-##    Sample   file1       file2      Primer_F    Primer_R  Well  Row   Column
-##    &lt;chr&gt;    &lt;chr&gt;       &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;  &lt;dbl&gt;
-##  1 51530-0… 51530-026_… 51530-026… GYAATCACTT… GGATTGCG… A1    A          1
-##  2 51530-0… 51530-027_… 51530-027… GYAATCACTT… GGATTGCG… B1    B          1
-##  3 51530-0… 51530-029_… 51530-029… GYAATCACTT… GGATTGCG… C1    C          1
-##  4 51530-0… 51530-031_… 51530-031… GYAATCACTT… GGATTGCG… D1    D          1
-##  5 51530-0… 51530-032_… 51530-032… GYAATCACTT… GGATTGCG… E1    E          1
-##  6 51530-0… 51530-033_… 51530-033… GYAATCACTT… GGATTGCG… F1    F          1
-##  7 51530-0… 51530-034_… 51530-034… GYAATCACTT… GGATTGCG… G1    G          1
-##  8 51530-0… 51530-035_… 51530-035… GYAATCACTT… GGATTGCG… H1    H          1
-##  9 51530-0… 51530-036_… 51530-036… GYAATCACTT… GGATTGCG… A2    A          2
-## 10 51530-0… 51530-037_… 51530-037… GYAATCACTT… GGATTGCG… B2    B          2
-## 11 51530-0… 51530-038_… 51530-038… GYAATCACTT… GGATTGCG… C2    C          2
-## 12 51530-0… 51530-039_… 51530-039… GYAATCACTT… GGATTGCG… D2    D          2
-## 13 51530-0… 51530-040_… 51530-040… GYAATCACTT… GGATTGCG… E2    E          2
-## 14 51530-0… 51530-041_… 51530-041… GYAATCACTT… GGATTGCG… F2    F          2
-## 15 51530-0… 51530-042_… 51530-042… GYAATCACTT… GGATTGCG… G2    G          2</code></pre>
+<pre><code>## # A tibble: 96 x 12
+##    Sample_name Well  i5_Adapter i7_Adapter PrimerF PrimerR Row   Column
+##    &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;  &lt;dbl&gt;
+##  1 1306a.1     A1    N502       N701       GYAATC… GGATTG… A          1
+##  2 1361a.1     B1    N503       N701       GYAATC… GGATTG… B          1
+##  3 1362a.1     C1    N504       N701       GYAATC… GGATTG… C          1
+##  4 1306b.1     D1    N505       N701       GYAATC… GGATTG… D          1
+##  5 1361b.1     E1    N506       N701       GYAATC… GGATTG… E          1
+##  6 1362b.1     F1    N507       N701       GYAATC… GGATTG… F          1
+##  7 1306a.2     G1    N508       N701       GYAATC… GGATTG… G          1
+##  8 1361a.2     H1    N517       N701       GYAATC… GGATTG… H          1
+##  9 1362a.2     A2    N502       N702       GYAATC… GGATTG… A          2
+## 10 1306b.2     B2    N503       N702       GYAATC… GGATTG… B          2
+## # … with 86 more rows, and 4 more variables: Qubit_Library &lt;dbl&gt;,
+## #   `Molarity(514bp)` &lt;dbl&gt;, Vol_to_plate &lt;dbl&gt;, H2O_to_plate &lt;dbl&gt;</code></pre>
 <div id="check-that-the-metadata-has-all-needed-fields" class="section level3">
 <h3>Check that the metadata has all needed fields</h3>
 <pre class="r"><code>init.metadata %&gt;% 
@@ -439,165 +433,289 @@ $(document).ready(function () {
                                  TRUE                                    ~ &quot;Absent&quot;),
          Well        = case_when(sum(str_detect(Variable, &quot;Well&quot;)) &gt; 0 ~ &quot;Present&quot;,
                                  TRUE                                    ~ &quot;Absent&quot;),
-         Primer_F    = case_when(sum(str_detect(Variable, &quot;Primer_F&quot;)) &gt; 0 ~ &quot;Present&quot;,
+         PrimerF    = case_when(sum(str_detect(Variable, &quot;PrimerF&quot;)) &gt; 0 ~ &quot;Present&quot;,
                                  TRUE                                    ~ &quot;Absent&quot;),
-         Primer_R    = case_when(sum(str_detect(Variable, &quot;Primer_R&quot;)) &gt; 0 ~ &quot;Present&quot;,
+         PrimerR    = case_when(sum(str_detect(Variable, &quot;PrimerR&quot;)) &gt; 0 ~ &quot;Present&quot;,
                                  TRUE                                    ~ &quot;Absent&quot;),
          
-         Plate       = case_when(sum(str_detect(Variable, &quot;Plate&quot;)) &gt; 0 ~ &quot;Present&quot;,
-                                 TRUE                                    ~ &quot;Absent&quot;)) -&gt; Checks</code></pre>
+         i5_Adapter  = case_when(sum(str_detect(Variable, &quot;i5_Adapter&quot;)) &gt; 0 ~ &quot;Present&quot;,
+                                 TRUE                                    ~ &quot;Absent&quot;),
+         i7_Adapter  = case_when(sum(str_detect(Variable, &quot;i7_Adapter&quot;)) &gt; 0 ~ &quot;Present&quot;,
+                                 TRUE                                    ~ &quot;Absent&quot;)) -&gt; Checks
+  
+
+
+if(sum(str_detect(Checks,&quot;Absent&quot;)) &gt; 0){ knitr::knit_exit(append = &quot;## ERROR: Initial metadata is missing some of the key column names: 
+
+                                                           - Sample_name
+                                                           - Well
+                                                           - PrimerF
+                                                           - PrimerR
+                                                           - Plate
+                                                           - i5_Adapter
+                                                           - i7_Adapter
+                                                           
+                                                           ### Change the column names / add the infromation to your csv file&quot;)}</code></pre>
 </div>
 </div>
 <div id="load-the-illumina-samplesheet-template" class="section level2">
 <h2>Load the Illumina SampleSheet template</h2>
-<pre class="r"><code>template.sample.sheet &lt;- read_lines(&quot;../data_sub/SampleSheetLibPrep.csv&quot;)</code></pre>
+<pre class="r"><code>template.sample.sheet &lt;- read_lines(here(&quot;data_sub&quot;,&quot;SampleSheetLibPrep.csv&quot;))</code></pre>
 <p>Locate all the lines in which the new parameters are going to be written</p>
 <pre class="r"><code>date.row  &lt;- str_which(template.sample.sheet, &quot;^\\Date&quot;)
 Assay.row &lt;- str_which(template.sample.sheet, &quot;^Assay&quot;)
 Index.row &lt;- str_which(template.sample.sheet, &quot;^Index Adapters&quot;)
 Reads.row &lt;- str_which(template.sample.sheet, &quot;^\\[Reads]&quot;)
-data.start &lt;- str_which(template.sample.sheet, &quot;^\\[Data]&quot;)</code></pre>
+data.start &lt;- str_which(template.sample.sheet, &quot;^\\[Data]&quot;)
+data.header &lt;- str_which(template.sample.sheet, &quot;^Sample_ID&quot;)</code></pre>
 </div>
 <div id="load-the-illumina-adapters" class="section level2">
 <h2>Load the Illumina adapters</h2>
-<pre class="r"><code>Nextera_Adapters_i7 &lt;- read_csv(&quot;../data_sub/Nextera_adapters_i7.csv&quot;)</code></pre>
+<pre class="r"><code>Nextera_Adapters_i7 &lt;- read_csv(here(&quot;data_sub&quot;,&quot;Nextera_adapters_i7.csv&quot;))</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
 ##   Position = col_character(),
 ##   I7_Index_ID = col_character(),
 ##   `Bases in Adapter` = col_character(),
 ##   index = col_character(),
-##   Column = col_double()
+##   Column = col_double(),
+##   Set = col_double()
 ## )</code></pre>
-<pre class="r"><code>Nextera_Adapters_i5 &lt;- read_csv(&quot;../data_sub/Nextera_adapters_i5.csv&quot;)</code></pre>
+<pre class="r"><code>Nextera_Adapters_i5 &lt;- read_csv(here(&quot;data_sub&quot;,&quot;Nextera_adapters_i5.csv&quot;)) %&gt;%
+  mutate(I5_Index_ID = str_replace(I5_Index_ID, &quot;S&quot;, &quot;N&quot;))</code></pre>
 <pre><code>## Parsed with column specification:
 ## cols(
 ##   Position = col_character(),
 ##   I5_Index_ID = col_character(),
 ##   `Bases in Adapter` = col_character(),
 ##   index2 = col_character(),
-##   Row = col_character()
+##   Row = col_character(),
+##   Set = col_double()
 ## )</code></pre>
-<pre class="r"><code>Nextera_Adapters_i7 %&gt;% 
+<pre class="r"><code>Nextera_Adapters_i7 %&gt;%
   mutate (Set = rep(c(1,2,3), each = 12)[1:26]) -&gt; Nextera_Adapters_i7
 
-Nextera_Adapters_i5 %&gt;% 
+Nextera_Adapters_i5 %&gt;%
   mutate (Set = rep(c(1,2,3), each = 8)[1:18]) -&gt; Nextera_Adapters_i5</code></pre>
 </div>
 <div id="merge-metadata-with-illumina-adapters" class="section level2">
 <h2>Merge metadata with illumina adapters</h2>
-<pre class="r"><code>Nextera_Adapters_i7 %&gt;% 
-  filter (Set == params$Set) %&gt;% 
-  select(-Position, -`Bases in Adapter`, -Set) %&gt;% 
-  right_join(init.metadata, by = c(&quot;Column&quot;)) %&gt;% 
+<pre class="r"><code># Nextera_Adapters_i7 %&gt;% 
+#   filter (Set == params$Set) %&gt;% 
+#   select(-Position, -`Bases in Adapter`, -Set) %&gt;% 
+#   right_join(init.metadata, by = c(&quot;Column&quot;)) %&gt;% 
+#   left_join(Nextera_Adapters_i5 %&gt;% 
+#               filter(Set == params$Set) %&gt;% 
+#               select(-Position, -`Bases in Adapter`)) %&gt;% 
+#   select(Sample, everything()) -&gt; metadata
+init.metadata %&gt;% 
+  left_join(Nextera_Adapters_i7 %&gt;% 
+              select(I7_Index_ID,index = `Bases in Adapter`),
+             by = c( &quot;i7_Adapter&quot;= &quot;I7_Index_ID&quot; ) ) %&gt;% 
   left_join(Nextera_Adapters_i5 %&gt;% 
-              filter(Set == params$Set) %&gt;% 
-              select(-Position, -`Bases in Adapter`)) %&gt;% 
-  select(Sample, everything()) -&gt; metadata</code></pre>
-<pre><code>## Joining, by = &quot;Row&quot;</code></pre>
+              select(I5_Index_ID,index2 = `Bases in Adapter`),
+            by = c(&quot;i5_Adapter&quot; = &quot;I5_Index_ID&quot;)) -&gt; metadata</code></pre>
 </div>
 <div id="fill-illumina-samplesheet" class="section level2">
 <h2>Fill Illumina SampleSheet</h2>
-<p>First with the parameters not linked with each sample</p>
+<p>First with the parameters not linked with each sample ### If there are two or more sets of PCR primers, we need to limit the sample sheet to the unique combinations of sample and barcodes, and split those in the pipeline</p>
 <pre class="r"><code>template.sample.sheet[date.row] &lt;- paste0(&quot;Date,&quot;,Sys.Date())
 
 template.sample.sheet[Assay.row] &lt;- paste0(&quot;Assay,&quot; ,params$Assay)
 template.sample.sheet[Index.row] &lt;- paste0(&quot;Index Adapters,&quot;,params$Index_Adapters)
 template.sample.sheet[Reads.row +2 ] &lt;- template.sample.sheet[Reads.row + 4] &lt;- params$Cycles_per_pairend</code></pre>
-<p>Then with the rest of the dataset</p>
-<pre class="r"><code>sample.data &lt;- tibble (Sample_Name = metadata$Sample,
-                      Sample_Plate = metadata$Set,
-                      Sample_Well = metadata$Well,
-                      I7_Index_ID = metadata$I7_Index_ID,
-                      index       = metadata$index,
-                      I5_Index_ID = metadata$I5_Index_ID,
-                      index2      = metadata$index2,
+<p>Then with the rest of the dataset - collapsing first by primers</p>
+<pre class="r"><code>metadata %&gt;% 
+  group_by(i5_Adapter,i7_Adapter ) %&gt;% 
+  tally() -&gt; occurrence.of.combos
+
+if(max(occurrence.of.combos$n &gt; 1 )){
+  print(&quot;There are combinations of barcodes assigned to more than 1 sample - Please Check they have different PCR primers so you can separate them after&quot;)
+  metadata %&gt;% 
+  group_by(i5_Adapter,i7_Adapter ) %&gt;% 
+    slice(1) -&gt; metadata.for.sample.sheet
+  print (&quot;Keeping the first occurence of each combo for your samplesheet&quot;)}else{metadata.for.sample.sheet &lt;- metadata}</code></pre>
+<pre class="r"><code>sample.data &lt;- tibble (Sample_Name = metadata.for.sample.sheet$Sample_name,
+                      Sample_Plate = params$Set,
+                      Sample_Well = metadata.for.sample.sheet$Well,
+                      I7_Index_ID = metadata.for.sample.sheet$i7_Adapter,
+                      index       = metadata.for.sample.sheet$index,
+                      I5_Index_ID = metadata.for.sample.sheet$i5_Adapter,
+                      index2      = metadata.for.sample.sheet$index2,
                       Sample_Project =&quot;&quot;, 
                       Description = &quot;&quot;) %&gt;% 
                 rownames_to_column(&quot;Sample_ID&quot;)
 
 
 nsamples &lt;- nrow(sample.data)
-template.sample.sheet &lt;- template.sample.sheet[1:data.start]
+template.sample.sheet &lt;- template.sample.sheet[1:data.header]
 for (i in 1:nsamples){
   
-  template.sample.sheet[i+data.start] &lt;- paste(sample.data[i,], collapse = &quot;,&quot;) 
+  template.sample.sheet[i+data.header] &lt;- paste(sample.data[i,], collapse = &quot;,&quot;) 
   
   }
 template.sample.sheet</code></pre>
-<pre><code>##  [1] &quot;[Header],,,,,,,&quot;                                             
-##  [2] &quot;&quot;                                                            
-##  [3] &quot;IEMFileVersion,5,,,,,,&quot;                                      
-##  [4] &quot;&quot;                                                            
-##  [5] &quot;Date,2019-11-12&quot;                                             
-##  [6] &quot;&quot;                                                            
-##  [7] &quot;Workflow,GenerateFASTQ,,,,,,&quot;                                
-##  [8] &quot;&quot;                                                            
-##  [9] &quot;Application,FASTQ Only,,,,,,&quot;                                
-## [10] &quot;&quot;                                                            
-## [11] &quot;Instrument Type,MiSeq,,,,,,&quot;                                 
-## [12] &quot;&quot;                                                            
-## [13] &quot;Assay,Nextera XT&quot;                                            
-## [14] &quot;&quot;                                                            
-## [15] &quot;Index Adapters,Nextera XT Index Kit (96 Indexes 384 Samples)&quot;
-## [16] &quot;&quot;                                                            
-## [17] &quot;Description,,,,,,,&quot;                                          
-## [18] &quot;&quot;                                                            
-## [19] &quot;Chemistry,Default,,,,,,&quot;                                     
-## [20] &quot;&quot;                                                            
-## [21] &quot;,,,,,,,&quot;                                                     
-## [22] &quot;&quot;                                                            
-## [23] &quot;[Reads],,,,,,,&quot;                                              
-## [24] &quot;&quot;                                                            
-## [25] &quot;301&quot;                                                         
-## [26] &quot;&quot;                                                            
-## [27] &quot;301&quot;                                                         
-## [28] &quot;&quot;                                                            
-## [29] &quot;,,,,,,,&quot;                                                     
-## [30] &quot;&quot;                                                            
-## [31] &quot;[Settings],,,,,,,&quot;                                           
-## [32] &quot;&quot;                                                            
-## [33] &quot;ReverseComplement,0,,,,,,&quot;                                   
-## [34] &quot;&quot;                                                            
-## [35] &quot;Adapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA,,,,,,&quot;             
-## [36] &quot;&quot;                                                            
-## [37] &quot;AdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT,,,,,,&quot;        
-## [38] &quot;&quot;                                                            
-## [39] &quot;,,,,,,,&quot;                                                     
-## [40] &quot;&quot;                                                            
-## [41] &quot;[Data],,,,,,,&quot;                                               
-## [42] &quot;1,51530-026_S79,1,A1,N701,TAAGGCGA,S501,TAGATCGC,,&quot;          
-## [43] &quot;2,51530-027_S4,1,B1,N701,TAAGGCGA,S502,CTCTCTAT,,&quot;           
-## [44] &quot;3,51530-029_S14,1,C1,N701,TAAGGCGA,S503,TATCCTCT,,&quot;          
-## [45] &quot;4,51530-031_S26,1,D1,N701,TAAGGCGA,S504,AGAGTAGA,,&quot;          
-## [46] &quot;5,51530-032_S37,1,E1,N701,TAAGGCGA,S505,GTAAGGAG,,&quot;          
-## [47] &quot;6,51530-033_S48,1,F1,N701,TAAGGCGA,S506,ACTGCATA,,&quot;          
-## [48] &quot;7,51530-034_S59,1,G1,N701,TAAGGCGA,S507,AAGGAGTA,,&quot;          
-## [49] &quot;8,51530-035_S69,1,H1,N701,TAAGGCGA,S508,CTAAGCCT,,&quot;          
-## [50] &quot;9,51530-036_S80,1,A2,N702,CGTACTAG,S501,TAGATCGC,,&quot;          
-## [51] &quot;10,51530-037_S5,1,B2,N702,CGTACTAG,S502,CTCTCTAT,,&quot;          
-## [52] &quot;11,51530-038_S15,1,C2,N702,CGTACTAG,S503,TATCCTCT,,&quot;         
-## [53] &quot;12,51530-039_S27,1,D2,N702,CGTACTAG,S504,AGAGTAGA,,&quot;         
-## [54] &quot;13,51530-040_S38,1,E2,N702,CGTACTAG,S505,GTAAGGAG,,&quot;         
-## [55] &quot;14,51530-041_S49,1,F2,N702,CGTACTAG,S506,ACTGCATA,,&quot;         
-## [56] &quot;15,51530-042_S60,1,G2,N702,CGTACTAG,S507,AAGGAGTA,,&quot;</code></pre>
-<pre class="r"><code>write_lines(template.sample.sheet,  paste0(params$output_dir, &quot;SampleSheet_&quot;,Sys.Date(),&quot;.csv&quot;))</code></pre>
+<pre><code>##   [1] &quot;[Header],,,,,,,&quot;                                                                            
+##   [2] &quot;,,,,,,,&quot;                                                                                    
+##   [3] &quot;IEMFileVersion,5,,,,,,&quot;                                                                     
+##   [4] &quot;,,,,,,,&quot;                                                                                    
+##   [5] &quot;Date,2019-11-27&quot;                                                                            
+##   [6] &quot;,,,,,,,&quot;                                                                                    
+##   [7] &quot;Workflow,GenerateFASTQ,,,,,,&quot;                                                               
+##   [8] &quot;,,,,,,,&quot;                                                                                    
+##   [9] &quot;Application,FASTQ Only,,,,,,&quot;                                                               
+##  [10] &quot;,,,,,,,&quot;                                                                                    
+##  [11] &quot;Instrument Type,MiSeq,,,,,,&quot;                                                                
+##  [12] &quot;,,,,,,,&quot;                                                                                    
+##  [13] &quot;Assay,Nextera XT&quot;                                                                           
+##  [14] &quot;,,,,,,,&quot;                                                                                    
+##  [15] &quot;Index Adapters,Nextera XT Index Kit (96 Indexes 384 Samples)&quot;                               
+##  [16] &quot;,,,,,,,&quot;                                                                                    
+##  [17] &quot;Description,,,,,,,&quot;                                                                         
+##  [18] &quot;,,,,,,,&quot;                                                                                    
+##  [19] &quot;Chemistry,Default,,,,,,&quot;                                                                    
+##  [20] &quot;,,,,,,,&quot;                                                                                    
+##  [21] &quot;,,,,,,,&quot;                                                                                    
+##  [22] &quot;,,,,,,,&quot;                                                                                    
+##  [23] &quot;[Reads],,,,,,,&quot;                                                                             
+##  [24] &quot;,,,,,,,&quot;                                                                                    
+##  [25] &quot;301&quot;                                                                                        
+##  [26] &quot;,,,,,,,&quot;                                                                                    
+##  [27] &quot;301&quot;                                                                                        
+##  [28] &quot;,,,,,,,&quot;                                                                                    
+##  [29] &quot;,,,,,,,&quot;                                                                                    
+##  [30] &quot;,,,,,,,&quot;                                                                                    
+##  [31] &quot;[Settings],,,,,,,&quot;                                                                          
+##  [32] &quot;,,,,,,,&quot;                                                                                    
+##  [33] &quot;ReverseComplement,0,,,,,,&quot;                                                                  
+##  [34] &quot;,,,,,,,&quot;                                                                                    
+##  [35] &quot;Adapter,CTGTCTCTTATACACATCT,,,,,,&quot;                                                          
+##  [36] &quot;,,,,,,,&quot;                                                                                    
+##  [37] &quot;,,,,,,,&quot;                                                                                    
+##  [38] &quot;,,,,,,,&quot;                                                                                    
+##  [39] &quot;,,,,,,,&quot;                                                                                    
+##  [40] &quot;,,,,,,,&quot;                                                                                    
+##  [41] &quot;[Data],,,,,,,&quot;                                                                              
+##  [42] &quot;,,,,,,,&quot;                                                                                    
+##  [43] &quot;Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description&quot;
+##  [44] &quot;1,1306a.1,1,A1,N701,TCGCCTTA,N502,CTCTCTAT,,&quot;                                               
+##  [45] &quot;2,1361a.1,1,B1,N701,TCGCCTTA,N503,TATCCTCT,,&quot;                                               
+##  [46] &quot;3,1362a.1,1,C1,N701,TCGCCTTA,N504,AGAGTAGA,,&quot;                                               
+##  [47] &quot;4,1306b.1,1,D1,N701,TCGCCTTA,N505,GTAAGGAG,,&quot;                                               
+##  [48] &quot;5,1361b.1,1,E1,N701,TCGCCTTA,N506,ACTGCATA,,&quot;                                               
+##  [49] &quot;6,1362b.1,1,F1,N701,TCGCCTTA,N507,AAGGAGTA,,&quot;                                               
+##  [50] &quot;7,1306a.2,1,G1,N701,TCGCCTTA,N508,CTAAGCCT,,&quot;                                               
+##  [51] &quot;8,1361a.2,1,H1,N701,TCGCCTTA,N517,GCGTAAGA,,&quot;                                               
+##  [52] &quot;9,1362a.2,1,A2,N702,CTAGTACG,N502,CTCTCTAT,,&quot;                                               
+##  [53] &quot;10,1306b.2,1,B2,N702,CTAGTACG,N503,TATCCTCT,,&quot;                                              
+##  [54] &quot;11,1361b.2,1,C2,N702,CTAGTACG,N504,AGAGTAGA,,&quot;                                              
+##  [55] &quot;12,1362b.2,1,D2,N702,CTAGTACG,N505,GTAAGGAG,,&quot;                                              
+##  [56] &quot;13,1306a.3,1,E2,N702,CTAGTACG,N506,ACTGCATA,,&quot;                                              
+##  [57] &quot;14,1361a.3,1,F2,N702,CTAGTACG,N507,AAGGAGTA,,&quot;                                              
+##  [58] &quot;15,1362a.3,1,G2,N702,CTAGTACG,N508,CTAAGCCT,,&quot;                                              
+##  [59] &quot;16,1306b.3,1,H2,N702,CTAGTACG,N517,GCGTAAGA,,&quot;                                              
+##  [60] &quot;17,1361b.3,1,A3,N703,TTCTGCCT,N502,CTCTCTAT,,&quot;                                              
+##  [61] &quot;18,1362b.3,1,B3,N703,TTCTGCCT,N503,TATCCTCT,,&quot;                                              
+##  [62] &quot;19,Positive.1,1,C3,N703,TTCTGCCT,N504,AGAGTAGA,,&quot;                                           
+##  [63] &quot;20,Sample_1.1,1,D3,N703,TTCTGCCT,N505,GTAAGGAG,,&quot;                                           
+##  [64] &quot;21,Sample_2.1,1,E3,N703,TTCTGCCT,N506,ACTGCATA,,&quot;                                           
+##  [65] &quot;22,Sample_3.1,1,F3,N703,TTCTGCCT,N507,AAGGAGTA,,&quot;                                           
+##  [66] &quot;23,Sample_4.1,1,G3,N703,TTCTGCCT,N508,CTAAGCCT,,&quot;                                           
+##  [67] &quot;24,Sample_5.1,1,H3,N703,TTCTGCCT,N517,GCGTAAGA,,&quot;                                           
+##  [68] &quot;25,Sample_6.1,1,A4,N704,GCTCAGGA,N502,CTCTCTAT,,&quot;                                           
+##  [69] &quot;26,Sample_7.1,1,B4,N704,GCTCAGGA,N503,TATCCTCT,,&quot;                                           
+##  [70] &quot;27,Sample_8.1,1,C4,N704,GCTCAGGA,N504,AGAGTAGA,,&quot;                                           
+##  [71] &quot;28,Sample_9.1,1,D4,N704,GCTCAGGA,N505,GTAAGGAG,,&quot;                                           
+##  [72] &quot;29,Sample_10.1,1,E4,N704,GCTCAGGA,N506,ACTGCATA,,&quot;                                          
+##  [73] &quot;30,Sample_11.1,1,F4,N704,GCTCAGGA,N507,AAGGAGTA,,&quot;                                          
+##  [74] &quot;31,Sample_12.1,1,G4,N704,GCTCAGGA,N508,CTAAGCCT,,&quot;                                          
+##  [75] &quot;32,Sample_13.1,1,H4,N704,GCTCAGGA,N517,GCGTAAGA,,&quot;                                          
+##  [76] &quot;33,Sample_19.1,1,A5,N705,AGGAGTCC,N502,CTCTCTAT,,&quot;                                          
+##  [77] &quot;34,Sample_48.1,1,B5,N705,AGGAGTCC,N503,TATCCTCT,,&quot;                                          
+##  [78] &quot;35,Sample_49.1,1,C5,N705,AGGAGTCC,N504,AGAGTAGA,,&quot;                                          
+##  [79] &quot;36,Sample_20.1,1,D5,N705,AGGAGTCC,N505,GTAAGGAG,,&quot;                                          
+##  [80] &quot;37,Sample_24.1,1,E5,N705,AGGAGTCC,N506,ACTGCATA,,&quot;                                          
+##  [81] &quot;38,Sample_25.1,1,F5,N705,AGGAGTCC,N507,AAGGAGTA,,&quot;                                          
+##  [82] &quot;39,Sample_21.1,1,G5,N705,AGGAGTCC,N508,CTAAGCCT,,&quot;                                          
+##  [83] &quot;40,Sample_28.1,1,H5,N705,AGGAGTCC,N517,GCGTAAGA,,&quot;                                          
+##  [84] &quot;41,Sample_29.1,1,A6,N706,CATGCCTA,N502,CTCTCTAT,,&quot;                                          
+##  [85] &quot;42,Sample_30.1,1,B6,N706,CATGCCTA,N503,TATCCTCT,,&quot;                                          
+##  [86] &quot;43,Sample_32.1,1,C6,N706,CATGCCTA,N504,AGAGTAGA,,&quot;                                          
+##  [87] &quot;44,Sample_34.1,1,D6,N706,CATGCCTA,N505,GTAAGGAG,,&quot;                                          
+##  [88] &quot;45,Positive.2,1,E6,N706,CATGCCTA,N506,ACTGCATA,,&quot;                                           
+##  [89] &quot;46,Sample_1.2,1,F6,N706,CATGCCTA,N507,AAGGAGTA,,&quot;                                           
+##  [90] &quot;47,Sample_2.2,1,G6,N706,CATGCCTA,N508,CTAAGCCT,,&quot;                                           
+##  [91] &quot;48,Sample_3.2,1,H6,N706,CATGCCTA,N517,GCGTAAGA,,&quot;                                           
+##  [92] &quot;49,Sample_4.2,1,A7,N707,GTAGAGAG,N502,CTCTCTAT,,&quot;                                           
+##  [93] &quot;50,Sample_5.2,1,B7,N707,GTAGAGAG,N503,TATCCTCT,,&quot;                                           
+##  [94] &quot;51,Sample_6.2,1,C7,N707,GTAGAGAG,N504,AGAGTAGA,,&quot;                                           
+##  [95] &quot;52,Sample_7.2,1,D7,N707,GTAGAGAG,N505,GTAAGGAG,,&quot;                                           
+##  [96] &quot;53,Sample_8.2,1,E7,N707,GTAGAGAG,N506,ACTGCATA,,&quot;                                           
+##  [97] &quot;54,Sample_9.2,1,F7,N707,GTAGAGAG,N507,AAGGAGTA,,&quot;                                           
+##  [98] &quot;55,Sample_10.2,1,G7,N707,GTAGAGAG,N508,CTAAGCCT,,&quot;                                          
+##  [99] &quot;56,Sample_11.2,1,H7,N707,GTAGAGAG,N517,GCGTAAGA,,&quot;                                          
+## [100] &quot;57,Sample_12.2,1,A8,N708,CCTCTCTG,N502,CTCTCTAT,,&quot;                                          
+## [101] &quot;58,Sample_13.2,1,B8,N708,CCTCTCTG,N503,TATCCTCT,,&quot;                                          
+## [102] &quot;59,Sample_19.2,1,C8,N708,CCTCTCTG,N504,AGAGTAGA,,&quot;                                          
+## [103] &quot;60,Sample_48.2,1,D8,N708,CCTCTCTG,N505,GTAAGGAG,,&quot;                                          
+## [104] &quot;61,Sample_49.2,1,E8,N708,CCTCTCTG,N506,ACTGCATA,,&quot;                                          
+## [105] &quot;62,Sample_20.2,1,F8,N708,CCTCTCTG,N507,AAGGAGTA,,&quot;                                          
+## [106] &quot;63,Sample_24.2,1,G8,N708,CCTCTCTG,N508,CTAAGCCT,,&quot;                                          
+## [107] &quot;64,Sample_25.2,1,H8,N708,CCTCTCTG,N517,GCGTAAGA,,&quot;                                          
+## [108] &quot;65,Sample_21.2,1,A9,N709,AGCGTAGC,N502,CTCTCTAT,,&quot;                                          
+## [109] &quot;66,Sample_28.2,1,B9,N709,AGCGTAGC,N503,TATCCTCT,,&quot;                                          
+## [110] &quot;67,Sample_29.2,1,C9,N709,AGCGTAGC,N504,AGAGTAGA,,&quot;                                          
+## [111] &quot;68,Sample_30.2,1,D9,N709,AGCGTAGC,N505,GTAAGGAG,,&quot;                                          
+## [112] &quot;69,Sample_32.2,1,E9,N709,AGCGTAGC,N506,ACTGCATA,,&quot;                                          
+## [113] &quot;70,Sample_34.2,1,F9,N709,AGCGTAGC,N507,AAGGAGTA,,&quot;                                          
+## [114] &quot;71,Positive.3,1,G9,N709,AGCGTAGC,N508,CTAAGCCT,,&quot;                                           
+## [115] &quot;72,Sample_1.3,1,H9,N709,AGCGTAGC,N517,GCGTAAGA,,&quot;                                           
+## [116] &quot;73,Sample_2.3,1,A10,N710,CAGCCTCG,N502,CTCTCTAT,,&quot;                                          
+## [117] &quot;74,Sample_3.3,1,B10,N710,CAGCCTCG,N503,TATCCTCT,,&quot;                                          
+## [118] &quot;75,Sample_4.3,1,C10,N710,CAGCCTCG,N504,AGAGTAGA,,&quot;                                          
+## [119] &quot;76,Sample_5.3,1,D10,N710,CAGCCTCG,N505,GTAAGGAG,,&quot;                                          
+## [120] &quot;77,Sample_6.3,1,E10,N710,CAGCCTCG,N506,ACTGCATA,,&quot;                                          
+## [121] &quot;78,Sample_7.3,1,F10,N710,CAGCCTCG,N507,AAGGAGTA,,&quot;                                          
+## [122] &quot;79,Sample_8.3,1,G10,N710,CAGCCTCG,N508,CTAAGCCT,,&quot;                                          
+## [123] &quot;80,Sample_9.3,1,H10,N710,CAGCCTCG,N517,GCGTAAGA,,&quot;                                          
+## [124] &quot;81,Sample_10.3,1,A11,N711,TGCCTCTT,N502,CTCTCTAT,,&quot;                                         
+## [125] &quot;82,Sample_11.3,1,B11,N711,TGCCTCTT,N503,TATCCTCT,,&quot;                                         
+## [126] &quot;83,Sample_12.3,1,C11,N711,TGCCTCTT,N504,AGAGTAGA,,&quot;                                         
+## [127] &quot;84,Sample_13.3,1,D11,N711,TGCCTCTT,N505,GTAAGGAG,,&quot;                                         
+## [128] &quot;85,Sample_19.3,1,E11,N711,TGCCTCTT,N506,ACTGCATA,,&quot;                                         
+## [129] &quot;86,Sample_48.3,1,F11,N711,TGCCTCTT,N507,AAGGAGTA,,&quot;                                         
+## [130] &quot;87,Sample_49.3,1,G11,N711,TGCCTCTT,N508,CTAAGCCT,,&quot;                                         
+## [131] &quot;88,Sample_20.3,1,H11,N711,TGCCTCTT,N517,GCGTAAGA,,&quot;                                         
+## [132] &quot;89,Sample_24.3,1,A12,N712,TCCTCTAC,N502,CTCTCTAT,,&quot;                                         
+## [133] &quot;90,Sample_25.3,1,B12,N712,TCCTCTAC,N503,TATCCTCT,,&quot;                                         
+## [134] &quot;91,Sample_21.3,1,C12,N712,TCCTCTAC,N504,AGAGTAGA,,&quot;                                         
+## [135] &quot;92,Sample_28.3,1,D12,N712,TCCTCTAC,N505,GTAAGGAG,,&quot;                                         
+## [136] &quot;93,Sample_29.3,1,E12,N712,TCCTCTAC,N506,ACTGCATA,,&quot;                                         
+## [137] &quot;94,Sample_30.3,1,F12,N712,TCCTCTAC,N507,AAGGAGTA,,&quot;                                         
+## [138] &quot;95,Sample_32.3,1,G12,N712,TCCTCTAC,N508,CTAAGCCT,,&quot;                                         
+## [139] &quot;96,Sample_34.3,1,H12,N712,TCCTCTAC,N517,GCGTAAGA,,&quot;</code></pre>
+<pre class="r"><code>write_lines(template.sample.sheet, 
+            paste0(params$output_dir, &quot;SampleSheet_&quot;,Sys.Date(),&quot;.csv&quot;),
+            sep = &quot;\r\n&quot;)</code></pre>
 </div>
 <div id="fill-in-metadata" class="section level2">
 <h2>Fill in metadata</h2>
 <p>We are going to assume that the Illumina always returns files with the format <code>Sample_name</code> <code>_L001_R</code> [1-2] ’_001.fastq`. So let’s fill the metadata accordingly</p>
-<pre class="r"><code>metadata %&gt;% 
-  mutate(file1 = paste0(Sample, &quot;_L001_R1_001.fastq&quot;),
-         file2 = paste0(Sample, &quot;_L001_R2_001.fastq&quot;)) %&gt;% 
-  select(Sample,
+<pre class="r"><code>metadata %&gt;%
+  mutate(file1 = paste0(Sample_name, &quot;_L001_R1_001.fastq&quot;),
+         file2 = paste0(Sample_name, &quot;_L001_R2_001.fastq&quot;)) %&gt;%
+  group_by(PrimerF, PrimerR) %&gt;% 
+  nest() %&gt;% 
+  rownames_to_column(&quot;Locus&quot;) %&gt;% 
+  unnest(data) %&gt;% 
+  select(Sample_name,
          file1,
          file2,
-         I7_Index_ID,
-         I5_Index_ID,
+         i7_Adapter,
+         i5_Adapter,
          Well,
-         Set,
-         Primer_F,
-         Primer_R) -&gt; metadata
+         PrimerF,
+         PrimerR, Locus) -&gt; metadata
 
 
 write_csv(metadata, paste0(params$output_dir, &quot;metadata_&quot;,Sys.Date(),&quot;.csv&quot;))</code></pre>
@@ -620,6 +738,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
