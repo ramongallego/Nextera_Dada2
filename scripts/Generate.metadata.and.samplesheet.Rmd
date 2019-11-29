@@ -93,6 +93,7 @@ if(sum(str_detect(Checks,"Absent")) > 0){ knitr::knit_exit(append = "## ERROR: I
 
 ```{r Loading SampleSheet}
 template.sample.sheet <- read_lines(here("data_sub","SampleSheetLibPrep.csv"))
+template.sample.sheet <- read_lines(here("data_sub","SampleSheet.csv"))
 ```
 
 Locate all the lines in which the new parameters are going to be written
@@ -152,7 +153,7 @@ template.sample.sheet[date.row] <- paste0("Date,",Sys.Date())
 
 template.sample.sheet[Assay.row] <- paste0("Assay," ,params$Assay)
 template.sample.sheet[Index.row] <- paste0("Index Adapters,",params$Index_Adapters)
-template.sample.sheet[Reads.row +2 ] <- template.sample.sheet[Reads.row + 4] <- params$Cycles_per_pairend
+template.sample.sheet[Reads.row +1 ] <- template.sample.sheet[Reads.row + 2] <- params$Cycles_per_pairend
 ```
 
 Then with the rest of the dataset - collapsing first by primers
@@ -173,7 +174,7 @@ if(max(occurrence.of.combos$n > 1 )){
 
 
 ```{r}
-sample.data <- tibble (Sample_Name = metadata.for.sample.sheet$Sample_name,
+sample.data <- tibble (Sample_ID = metadata.for.sample.sheet$Sample_name,
                       Sample_Plate = params$Set,
                       Sample_Well = metadata.for.sample.sheet$Well,
                       I7_Index_ID = metadata.for.sample.sheet$i7_Adapter,
@@ -181,8 +182,7 @@ sample.data <- tibble (Sample_Name = metadata.for.sample.sheet$Sample_name,
                       I5_Index_ID = metadata.for.sample.sheet$i5_Adapter,
                       index2      = metadata.for.sample.sheet$index2,
                       Sample_Project ="", 
-                      Description = "") %>% 
-                rownames_to_column("Sample_ID")
+                      Description = "") 
 
 
 nsamples <- nrow(sample.data)
@@ -205,6 +205,7 @@ We are going to assume that the Illumina always returns files with the format `S
 
 ```{r}
 metadata %>%
+  mutate(Sample_name = str_replace_all(Sample_name,pattern = "[\\.|_]",replacement = "-")) %>% 
   mutate(file1 = paste0(Sample_name, "_L001_R1_001.fastq"),
          file2 = paste0(Sample_name, "_L001_R2_001.fastq")) %>%
   group_by(PrimerF, PrimerR) %>% 
