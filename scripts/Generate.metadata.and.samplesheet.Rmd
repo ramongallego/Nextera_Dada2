@@ -134,10 +134,10 @@ Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv"))
 #   select(Sample, everything()) -> metadata
 init.metadata %>% 
   left_join(Nextera_Adapters_i7 %>% 
-              select(I7_Index_ID,index = `Bases in Adapter`),
+              select(I7_Index_ID,index),
              by = c( "i7_Adapter"= "I7_Index_ID" ) ) %>% 
   left_join(Nextera_Adapters_i5 %>% 
-              select(I5_Index_ID,index2 = `Bases in Adapter`),
+              select(I5_Index_ID,index2 ),
             by = c("i5_Adapter" = "I5_Index_ID")) -> metadata
 
 ```

@@ -88,7 +88,7 @@ for column in "${all_columns[@]}" ; do
 fi
 done
 echo "All columns passed test"
-exit
+
 ### GET FILENAMES and PRIMERS and Sample SAMPLE_NAMES and LocusInfo
 
 FILE1=($(awk -F',' -v COLNUM=$COLNUM_FILE1 \
