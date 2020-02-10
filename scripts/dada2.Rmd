@@ -33,7 +33,7 @@ library (Biostrings)
 library (digest)
 library (seqinr)
 library (knitr)
-library(kableExtra)
+library (kableExtra)
 
 sample.metadata <- read_csv(params$metadata)
 filt_path <- file.path(params$folder, "filtered")
@@ -77,7 +77,7 @@ sample.metadata %>%
           mergers = pmap(.l = list(dadaF1,derepF1, dadaR1,derepR1),                 # merge things
                          .f = mergePairs )) -> output.dada2
 
-
+write_rds(output.dada2, path = "output.halfway.rds")
 seqtabF <- makeSequenceTable(output.dada2$mergers)
 dim(seqtabF)
 

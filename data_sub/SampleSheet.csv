@@ -1,0 +1,23 @@
+[Header],,,,,,,,,
+IEMFileVersion,5
+Investigator Name,
+Experiment Name,
+Date,11/04/2019
+Workflow,GenerateFASTQ
+Application,FASTQ Only
+Instrument Type,MiSeq
+Assay,Nextera XT
+Index Adapters,"Nextera XT Index Kit (96 Indexes 384 Samples)"
+Description,
+Chemistry,Amplicon
+
+[Reads]
+301
+301
+
+[Settings]
+ReverseComplement,0
+Adapter,CTGTCTCTTATACACATCT
+
+[Data]
+Sample_ID,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
