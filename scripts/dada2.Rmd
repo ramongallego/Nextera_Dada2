@@ -39,6 +39,15 @@ sample.metadata <- read_csv(params$metadata)
 filt_path <- file.path(params$folder, "filtered")
 getwd()
 filt_path
+# Check if output directory exists - if not create as a subfolder of input dir
+
+if(!dir.exists(file.path(params$output.folder))){
+  dir.create(file.path(params$folder, params$output.folder))
+  output.dir <- file.path(params$folder, params$output.folder)
+}else{
+  output.dir <- file.path(params$output.folder)
+}
+
 ```
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
@@ -96,10 +105,10 @@ seqtab.nochim.df <- as.data.frame(seqtab.nochim)
 
 ```{r}
 # Output files
-  conv_file <- file.path(params$output.folder,"hash_key.csv")
-  conv_file.fasta <- file.path(params$output.folder,"hash_key.fasta")
+  conv_file <- file.path(output.dir,"hash_key.csv")
+  conv_file.fasta <- file.path(output.dir,"hash_key.fasta")
   
-  ASV_file <-  file.path(params$output.folder,"ASV_table.csv")
+  ASV_file <-  file.path(output.dir,"ASV_table.csv")
 # Now decide if you want hashing or not
 if ( params$hash==TRUE)
   {
