@@ -10,10 +10,10 @@ I have done this in UNIX (macOSX10.13.6 High Sierra - I will test it in Linux, m
     * tidyverse
     * DADA2
     * rmarkdown
-    * devtools
     * stringr
-    * Biostrings
     * digest
+    * knitr
+    * kableExtra
     
   
 
@@ -26,33 +26,66 @@ Of this pipeline, go to https://github.com/ramongallego/Nextera_Dada2 and clone 
 You will need: 
 
   - A folder with all the fastq files to be processed.
-  - A metadata file with one row per sample with the following columns:
+  - A metadata file with one row per sample and locus with the following columns:
   
-        - Sample name - The name that makes sense to you and your project
+  
+        - Sample name - The name that makes sense to you and your project (No spaces in the name would be better)
         - Well  - in the 96-well plate
-        - Plate
-        - i7 Adapter
-        - i5 Adapter
+        - Set - In case there are more than 96 samples (1, 2, 3)
+        - Locus: The name of the locus you want to use (e.g. Leray_COI)
+        - PrimerF: The nucleotide sequence of the forward primer - supports IUPAC characters 
+        - PrimerR: Ditto for the reverse primer (also in 5' -> 3' direction)
+        - i7 Adapter: N701... See file Nextera_adapters_i7.csv in the data_sub subfolder.
+        - i5 Adapter: S503... See file Nextera_adapters_i5.csv in the data_sub subfolder
         - File1: it should match exactly the output of the Miseq.
-        - File2: the other read
+        - File2: Same for the second read.
         
-  - A parameters file, which you will have to edit each time with a text editor. Parameters to set up include:
-        - path to the metadata file
-        - path to the folder containing the fastqs
-        - column names of the metadata file that match the key columns above
-        - Other options
+  - An output folder.
         
 
 # Output files
-The pipeline will create a folder for each analysis, and in it you will find the two key files:
+
+The pipeline will work in two stages. I have done this to make sure that you only have to run the cutadapt part once, and then you can reuse the output of cutadapt with different parameters.
+
+## The cutadapt-wrapper
+
+The first one will split the reads by locus (if there is more than one) and remove the primer from the sequences. It will deploy in your folder:
+
+  - A series of fastq files, two per sample and locus (Forward and Reverse reads)
+  - A new metadata file, that will have one row per sample and the following columns:
   
+      - Sample_name
+      - Locus  (the name from the original.metadata)
+      - file1 (with the format Locus_original_file1_name.fastq)
+      - file2 (with the same format)
+      
+And this is all you need to run the second part of the analysis
+
+## The Dada2 tailing
+
+This part of the process will quality trim the reads, merge them and detect the Amplicon Sequence Variants using Dada2. The inputs required are the series of fastq files and the new metadata we generated from step1. 
+
+The outputs that you will obtain are:
+ 
   - ASV table: includes three columns: Hash, Sample, nReads
-  - Hash_key; in .csv format, two columns: Hash, Sequence
+  - Hash_key, in .csv format, two columns: Hash, Sequence
+  - Hash key, in .fasta format
   
 The program also spits out a table with the summary statistics, a log file, and a Markdown. It will also create a copy of the parameter and metadata files
 
 # Usage
 
-Operates in the bash shell
+## The cutadapt-wrapper
 
-`bash path\to\script\dada2.wraper.sh path\to\parameters.file`
+Operates in the bash shell. So open the terminal and run
+
+
+`bash path\to\script\cutadapt.wrapper.sh path\to\folder\with\fastqs {metadata_file} {output_folder}`
+
+## The Dada2-wrapper
+
+Open the file dada2.Rmd in Rstudio. Click on the dropdown option `Knitr with parameters`. Add your selections
+
+Currently working in getting a browse function that allows you to navigate to your target folder
+
+
