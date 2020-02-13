@@ -8,18 +8,23 @@ params:
   Index_Adapters: "Nextera XT Index Kit (96 Indexes 384 Samples)"
   Cycles_per_pairend: 301
   Set: 1
-  input.metadata: ../data_sub/metadata.csv
+  input.metadata: 
+    value: ../data_sub/metadata.csv
+    input: file
   date: !r Sys.Date()
   output_dir: ../data_sub/
+output_dir: params$output_dir
 ---
 ## How to use this
 
 To run this Rmarkdown, open it in Rstudio and from the knit drop-down menu, choose Knit with parameters
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
+
+library (tidyverse)
 library (here)
-#TODO: Change input to include i7 and i5 primers - and use that info
+library (kableExtra)
+
 ```
 
 ## What does this do
@@ -28,15 +33,25 @@ It creates the Illumina Sample sheet and the `metadata.csv` file that you need f
 
 ## Required input
 
-You need an input file with the following columns:
+You need an input file with at least the following columns:
 
-  - Sample name
-  - Well in the 96-well plate used for the Nextera reaction. 
-  - PrimerF, 
-  - PrimerR,
-  - i7 Adapter (name) used to identify samples. Format is N7XX
-  - i5 Adapter (name) used to identify samples. Format is N5XX
+  - Sample_name: Avoid spaces - for compatibility with MiSeq's sample sheet, use hyphen "-" instead of underscores "_" or full stops "."
+  - Well:  in the 96-well plate used for the Nextera reaction. 
+  - PrimerF: using IUPAC wildcard character
+  - PrimerR: ditto
+  - Locus: Name of the locus, again without spaces.
+  - i7_Index_Name: Adapter used to identify samples. Format is N7XX
+  - i5_Index_Name: Adapter used to identify samples. Format is N5XX
 
+## Load the Illumina adapters
+
+```{r load nextera}
+
+Nextera_Adapters_i7 <- read_csv(here("data_sub","Nextera_adapters_i7.csv"))
+
+Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) 
+
+```
 
 ## Loading the metadata you want to sequence
 
@@ -65,9 +80,9 @@ init.metadata %>%
          PrimerR    = case_when(sum(str_detect(Variable, "PrimerR")) > 0 ~ "Present",
                                  TRUE                                    ~ "Absent"),
          
-         i5_Adapter  = case_when(sum(str_detect(Variable, "i5_Adapter")) > 0 ~ "Present",
+         i5_Adapter  = case_when(sum(str_detect(Variable, "i5_Index_Name")) > 0 ~ "Present",
                                  TRUE                                    ~ "Absent"),
-         i7_Adapter  = case_when(sum(str_detect(Variable, "i7_Adapter")) > 0 ~ "Present",
+         i7_Adapter  = case_when(sum(str_detect(Variable, "i7_Index_Name")) > 0 ~ "Present",
                                  TRUE                                    ~ "Absent")) -> Checks
   
 
@@ -110,17 +125,7 @@ data.header <- str_which(template.sample.sheet, "^Sample_ID")
 
 ```
 
-## Load the Illumina adapters
 
-```{r load nextera}
-
-Nextera_Adapters_i7 <- read_csv(here("data_sub","Nextera_adapters_i7.csv"))
-
-Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) 
-
-
-
-```
 
 ## Merge metadata with illumina adapters
 
@@ -133,23 +138,30 @@ Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv"))
 #               filter(Set == params$Set) %>% 
 #               select(-Position, -`Bases in Adapter`)) %>% 
 #   select(Sample, everything()) -> metadata
+# init.metadata %>% 
+#   left_join(Nextera_Adapters_i7 %>% 
+#               select(I7_Index_ID,index),
+#              by = c( "i7_Adapter"= "I7_Index_ID" ) ) %>% 
+#   left_join(Nextera_Adapters_i5 %>% 
+#               select(I5_Index_ID,index2 ),
+#             by = c("i5_Adapter" = "I5_Index_ID")) -> metadata
+
 init.metadata %>% 
-  left_join(Nextera_Adapters_i7 %>% 
-              select(I7_Index_ID,index),
-             by = c( "i7_Adapter"= "I7_Index_ID" ) ) %>% 
-  left_join(Nextera_Adapters_i5 %>% 
-              select(I5_Index_ID,index2 ),
-            by = c("i5_Adapter" = "I5_Index_ID")) -> metadata
+  left_join(Nextera_Adapters_i7) %>% 
+  left_join(Nextera_Adapters_i5) -> metadata
 
 ```
 
 ## Fill Illumina SampleSheet
 
-First with the parameters not linked with each sample
-### If there are two or more sets of PCR primers, we need to limit the sample sheet to the unique combinations of sample and barcodes, and split those in the pipeline
+In the case where there are many loci represented on each sample, usually you have them in the same well. If this is the case, your Illumina samplesheet will have fewer entries (rows) than your metadata sheet. In the Illumina sampleSheet, there are two parts: one that refers to the whole plate, and one that specificies the samples run.
+
+### Parameters that refer to the whole sequencing run
+
+These include date of analysis, 
 
 ```{r}
-template.sample.sheet[date.row] <- paste0("Date,",Sys.Date())
+template.sample.sheet[date.row] <- paste0("Date,",params$date)
 
 template.sample.sheet[Assay.row] <- paste0("Assay," ,params$Assay)
 template.sample.sheet[Index.row] <- paste0("Index Adapters,",params$Index_Adapters)
@@ -161,7 +173,7 @@ Then with the rest of the dataset - collapsing first by primers
 ```{r collapse by primer}
 
 metadata %>% 
-  group_by(i5_Adapter,i7_Adapter ) %>% 
+  group_by( i5_Index_Name,i7_Index_Name ) %>% 
   tally() -> occurrence.of.combos
 
 if(max(occurrence.of.combos$n > 1 )){
@@ -173,15 +185,15 @@ if(max(occurrence.of.combos$n > 1 )){
 ```
 
 
-```{r}
-sample.data <- tibble (Sample_ID = metadata.for.sample.sheet$Sample_name,
+```{r, echo = F}
+sample.data <- tibble (Sample_ID   = metadata.for.sample.sheet$Sample_name,
                       Sample_Plate = params$Set,
-                      Sample_Well = metadata.for.sample.sheet$Well,
-                      I7_Index_ID = metadata.for.sample.sheet$i7_Adapter,
-                      index       = metadata.for.sample.sheet$index,
-                      I5_Index_ID = metadata.for.sample.sheet$i5_Adapter,
-                      index2      = metadata.for.sample.sheet$index2,
-                      Sample_Project ="", 
+                      Sample_Well  = metadata.for.sample.sheet$Well,
+                      I7_Index_ID  = metadata.for.sample.sheet$i7_Index_Name,
+                      index        = metadata.for.sample.sheet$Bases_for_Sample_Sheet_i7,
+                      I5_Index_ID  = metadata.for.sample.sheet$i5_Index_Name,
+                      index2       = metadata.for.sample.sheet$Bases_for_Sample_Sheet_i5,
+                      Sample_Project = "", 
                       Description = "") 
 
 
@@ -192,7 +204,7 @@ for (i in 1:nsamples){
   template.sample.sheet[i+data.header] <- paste(sample.data[i,], collapse = ",") 
   
   }
-template.sample.sheet
+
 
 write_lines(template.sample.sheet, 
             paste0(params$output_dir, "SampleSheet_",Sys.Date(),".csv"),
@@ -203,25 +215,28 @@ write_lines(template.sample.sheet,
 
 We are going to assume that the Illumina always returns files with the format `Sample_name` `_L001_R` [1-2] '_001.fastq`. So let's fill the metadata accordingly
 
-```{r}
+```{r, echo=F}
 metadata %>%
   mutate(Sample_name = str_replace_all(Sample_name,pattern = "[\\.|_]",replacement = "-")) %>% 
   mutate(file1 = paste0(Sample_name, "_L001_R1_001.fastq"),
          file2 = paste0(Sample_name, "_L001_R2_001.fastq")) %>%
-  group_by(PrimerF, PrimerR) %>% 
-  nest() %>% 
-  rownames_to_column("Locus") %>% 
-  unnest(data) %>% 
-  select(Sample_name,
+ select(Sample_name,
          file1,
          file2,
-         i7_Adapter,
-         i5_Adapter,
+         i7_Index_Name,
+         i5_Index_Name,
          Well,
          PrimerF,
-         PrimerR, Locus) -> metadata
+         PrimerR,
+         Locus) -> metadata
 
 
 write_csv(metadata, paste0(params$output_dir, "metadata_",Sys.Date(),".csv"))
+
+kable(metadata, align= "c", format = "html") %>%
+      kable_styling(bootstrap_options= "striped", fixed_thead = T,full_width = T, position = "center") %>%
+      column_spec(2, bold=T) %>%
+  scroll_box(width = "800px", height = "600px")
+
 ```
 
