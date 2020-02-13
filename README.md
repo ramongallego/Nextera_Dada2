@@ -29,16 +29,16 @@ You will need:
   - A metadata file with one row per sample and locus with the following columns:
   
   
-        - Sample name - The name that makes sense to you and your project (No spaces in the name would be better)
+        - Sample_name - The name that makes sense to you and your project (No spaces in the name would be better)
         - Well  - in the 96-well plate
         - Set - In case there are more than 96 samples (1, 2, 3)
         - Locus: The name of the locus you want to use (e.g. Leray_COI)
         - PrimerF: The nucleotide sequence of the forward primer - supports IUPAC characters 
         - PrimerR: Ditto for the reverse primer (also in 5' -> 3' direction)
-        - i7 Adapter: N701... See file Nextera_adapters_i7.csv in the data_sub subfolder.
-        - i5 Adapter: S503... See file Nextera_adapters_i5.csv in the data_sub subfolder
-        - File1: it should match exactly the output of the Miseq.
-        - File2: Same for the second read.
+        - i7_Index_Name: N701... See file Nextera_adapters_i7.csv in the data_sub subfolder.
+        - i5_Index_Name: N503... See file Nextera_adapters_i5.csv in the data_sub subfolder
+        - file1: it should match exactly the output of the Miseq.
+        - file2: Same for the second read.
         
   - An output folder.
         
