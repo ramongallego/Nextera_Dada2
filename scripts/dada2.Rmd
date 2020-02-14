@@ -6,7 +6,6 @@ output: html_document
 params:
   folder: 
     value: ../data_sub/noprimers
-    input: directory
   hash: Yes
   trimming.length.Read1: 200
   trimming.length.Read2: 200

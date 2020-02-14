@@ -228,7 +228,7 @@ for (i in 1:nsamples){
 
 
 write_lines(template.sample.sheet, 
-            paste0(params$output_dir, "SampleSheet_",Sys.Date(),".csv"),
+            file.path(params$output_dir,paste0( "SampleSheet_",Sys.Date(),".csv")),
             sep = "\r\n")
 ```
 
@@ -252,12 +252,12 @@ metadata %>%
          Locus) -> metadata
 
 
-write_csv(metadata, paste0(params$output_dir, "metadata_",Sys.Date(),".csv"))
+write_csv(metadata, file.path(params$output_dir,paste0( "metadata_",Sys.Date(),".csv")))
 
 kable(metadata, align= "c", format = "html") %>%
       kable_styling(bootstrap_options= "striped", fixed_thead = T,full_width = T, position = "center") %>%
       column_spec(2, bold=T) %>%
-  scroll_box(width = "800px", height = "600px")
+  scroll_box(width = "1200px", height = "600px")
 
 ```
 
