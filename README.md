@@ -1,6 +1,12 @@
 # Nextera_Dada2
-A wrapper around the process needed to process MiSeq reads with Dada2 when the libraries have been made with Nextera adapters
-I have done this in UNIX (macOSX10.13.6 High Sierra - I will test it in Linux, macOSX Catalina)
+A wrapper around the processes needed to analyse MiSeq reads with Dada2 when the libraries have been made with Nextera adapters
+I have done this in UNIX (macOSX10.13.6 High Sierra - I will test it in Linux, macOSX Catalina).
+
+The idea is to separate reads by locus (if more than 1) and sample, remove the primers with cutadapt (quicker than doing it in R) and then use DADA2 within each sample and locus.
+
+## Why use this?
+
+You can also do all these steps by yourself. The advantage of this approach is that it will not only process the samples, but will also generate Rmarkdown files to document the process that got you there. In case things go wrong at some stage, you can retake the analysis with the fastq files from the intermediate processes
 
 # Dependecies
 
@@ -41,18 +47,22 @@ You will need:
         - file2: Same for the second read.
         
   - An output folder.
+  
+### Note on metadata and filenames
+
+In case you don't want to introduce the filenames manually, there is an RMarkdown called "Generate.metadata.and.samplesheet.Rmd". The idea is to parse the information from your original metadata (Sample_name, Well, Locus, PrimerF, PrimerR, and i5 and i7 indices), parse it with the Nextera Indices files and generate a metadata.csv and a SampleSheet for the MiSeq to use. The newly generated metadata file will have filenames there, based on the MiSeq format `<Sample_name>` `_L001_R` [1-2] `_001.fastq`. By all means check that this is the format in which your MiSeq / Sequencing facility returns the filenames.
         
 
 # Output files
 
-The pipeline will work in two stages. I have done this to make sure that you only have to run the cutadapt part once, and then you can reuse the output of cutadapt with different parameters.
+The pipeline will work in two stages (or three if you use the metadata and sample sheet generator). I have done this to make sure that you only have to run the cutadapt part once, and then you can reuse the output of cutadapt with different parameters in Dada2.
 
 ## The cutadapt-wrapper
 
 The first one will split the reads by locus (if there is more than one) and remove the primer from the sequences. It will deploy in your folder:
 
   - A series of fastq files, two per sample and locus (Forward and Reverse reads)
-  - A new metadata file, that will have one row per sample and the following columns:
+  - A new metadata file, that will have one row per sample and locus and the following columns:
   
       - Sample_name
       - Locus  (the name from the original.metadata)
@@ -82,9 +92,11 @@ Operates in the bash shell. So open the terminal and run
 
 `bash path\to\script\cutadapt.wrapper.sh path\to\folder\with\fastqs {metadata_file} {output_folder}`
 
+Just to be on the safe side, use absolute paths to all arguments.
+
 ## The Dada2-wrapper
 
-Open the file dada2.Rmd in Rstudio. Click on the dropdown option `Knitr with parameters`. Add your selections
+Open the file dada2.Rmd in Rstudio. Click on the dropdown option `Knitr with parameters`. Add your selections - the folder is the one you set as an output folder in cutadapt, the 
 
 Currently working in getting a browse function that allows you to navigate to your target folder
 

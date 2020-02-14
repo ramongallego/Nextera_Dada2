@@ -13,7 +13,7 @@ params:
     input: file
   date: !r Sys.Date()
   output_dir: ../data_sub/
-output_dir: params$output_dir
+
 ---
 ## How to use this
 
@@ -114,7 +114,7 @@ Make the check that all the indices are present
 
 ```{r}
 
-case_when(nrow(anti_join(init.metadata, Nextera_Adapters_i5)) + nrow(anti_join(init.metadata, Nextera_Adapters_i7)) == 0 ~ "All indices present iun the  dataset",
+case_when(nrow(anti_join(init.metadata, Nextera_Adapters_i5)) + nrow(anti_join(init.metadata, Nextera_Adapters_i7)) == 0 ~ "All indices present in the  dataset",
            # == 0 ~ "Pass i7",
           TRUE                                                     ~ "Either some of the i5 or the i7 indices are not present in the Nextera Indices list - That will result in NAs in the final Sample Sheet")
 
@@ -151,21 +151,6 @@ data.header <- str_which(template.sample.sheet, "^Sample_ID")
 ## Merge metadata with illumina adapters
 
 ```{r merging}
-# Nextera_Adapters_i7 %>% 
-#   filter (Set == params$Set) %>% 
-#   select(-Position, -`Bases in Adapter`, -Set) %>% 
-#   right_join(init.metadata, by = c("Column")) %>% 
-#   left_join(Nextera_Adapters_i5 %>% 
-#               filter(Set == params$Set) %>% 
-#               select(-Position, -`Bases in Adapter`)) %>% 
-#   select(Sample, everything()) -> metadata
-# init.metadata %>% 
-#   left_join(Nextera_Adapters_i7 %>% 
-#               select(I7_Index_ID,index),
-#              by = c( "i7_Adapter"= "I7_Index_ID" ) ) %>% 
-#   left_join(Nextera_Adapters_i5 %>% 
-#               select(I5_Index_ID,index2 ),
-#             by = c("i5_Adapter" = "I5_Index_ID")) -> metadata
 
 init.metadata %>% 
   left_join(Nextera_Adapters_i7) %>% 

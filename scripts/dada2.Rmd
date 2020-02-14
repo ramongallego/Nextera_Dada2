@@ -17,7 +17,8 @@ params:
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir=params$folder)
+knitr::opts_knit$set(root.dir=params$folder,
+                     base.dir = params$output_folder)
 ```
 
 ## Dada2 report
@@ -156,6 +157,7 @@ write_csv(current_asv, ASV_file)
 
 
 ##Track the fate of all reads
+
 ```{r output_summary}
 
 getN <- function(x) sum(getUniques(x))
