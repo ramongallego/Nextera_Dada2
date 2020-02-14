@@ -4,7 +4,7 @@ I have done this in UNIX (macOSX10.13.6 High Sierra - I will test it in Linux, m
 
 # Dependecies
 
-  - cutadapt (v1.)
+  - cutadapt (v2.1)
   - R (v3.6 or above), Rstudio(if not then I think you need pandoc, knitr, rmarkdown)
   - R packages:
     * tidyverse
@@ -19,7 +19,7 @@ I have done this in UNIX (macOSX10.13.6 High Sierra - I will test it in Linux, m
 
 # Installation
 
-Of this pipeline, go to https://github.com/ramongallego/Nextera_Dada2 and clone or download this repository. Of the dependecies, I will update this with links that will break in the next month
+For this pipeline, go to https://github.com/ramongallego/Nextera_Dada2 and clone or download this repository. For the dependecies, I will update this with links that will break in the next month
 
 # Input files
 
