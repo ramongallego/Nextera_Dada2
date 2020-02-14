@@ -94,12 +94,32 @@ if(sum(str_detect(Checks,"Absent")) > 0){ knitr::knit_exit(append = "## ERROR: I
                                                            - PrimerF
                                                            - PrimerR
                                                            - Plate
-                                                           - i5_Adapter
-                                                           - i7_Adapter
+                                                           - i5_Index_Name
+                                                           - i7_Index_Name
                                                            
                                                            ### Change the column names / add the infromation to your csv file")}
 
 ```
+The i5 and i7 indices can start by  either N, S, or H. But the sequence is the same. Let's make sure that they are compatible with the Nextera Indices file
+
+```{r}
+
+init.metadata %>% 
+  mutate(i5_Index_Name = str_replace(i5_Index_Name, "^[EHNS]", "N"),
+         i7_Index_Name = str_replace(i7_Index_Name, "^[HN]", "N")) -> init.metadata
+
+```
+
+Make the check that all the indices are present
+
+```{r}
+
+case_when(nrow(anti_join(init.metadata, Nextera_Adapters_i5)) + nrow(anti_join(init.metadata, Nextera_Adapters_i7)) == 0 ~ "All indices present iun the  dataset",
+           # == 0 ~ "Pass i7",
+          TRUE                                                     ~ "Either some of the i5 or the i7 indices are not present in the Nextera Indices list - That will result in NAs in the final Sample Sheet")
+
+```
+
 
 
 ## Load the Illumina SampleSheet template
@@ -107,8 +127,9 @@ if(sum(str_detect(Checks,"Absent")) > 0){ knitr::knit_exit(append = "## ERROR: I
 
 
 ```{r Loading SampleSheet}
-template.sample.sheet <- read_lines(here("data_sub","SampleSheetLibPrep.csv"))
+
 template.sample.sheet <- read_lines(here("data_sub","SampleSheet.csv"))
+
 ```
 
 Locate all the lines in which the new parameters are going to be written
