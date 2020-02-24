@@ -1,0 +1,17 @@
+Nucleotide.symbol,Full.Name
+A,Adenine
+C,Cytosine
+G,Guanine
+T,Thymine
+U,Uracil
+R,Guanine / Adenine (purine)
+Y,Cytosine / Thymine (pyrimidine)
+K,Guanine / Thymine
+M,Adenine / Cytosine
+S,Guanine / Cytosine
+W,Adenine / Thymine
+B,Guanine / Thymine / Cytosine
+D,Guanine / Adenine / Thymine
+H,Adenine / Cytosine / Thymine
+V,Guanine / Cytosine / Adenine
+N,Adenine / Guanine / Cytosine / Thymine

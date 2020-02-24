@@ -219,14 +219,26 @@ write_lines(template.sample.sheet,
 
 ## Fill in metadata
 
-We are going to assume that the Illumina always returns files with the format `Sample_name` `_L001_R` [1-2] '_001.fastq`. So let's fill the metadata accordingly
+
+We are going to assume that the Illumina always returns files with the format `Sample_name` `Sample_number` `_L001_R` [1-2] '_001.fastq`. So let's fill the metadata accordingly.
+
+### Step1 Get the filenames
+
+```{r}
+
+sample.data %>% 
+  mutate(Sample_name = str_replace_all(Sample_ID,pattern = "[\\.|_]",replacement = "-")) %>%
+  rownames_to_column("Sample_number") %>% 
+  mutate(file1 = paste0(Sample_name, "_S", Sample_number, "_L001_R1_001.fastq"),
+         file2 = paste0(Sample_name, "_S", Sample_number, "_L001_R2_001.fastq")) %>% 
+  select(i7_Index_Name = I7_Index_ID, i5_Index_Name = I5_Index_ID, file1, file2) -> filenames
+```
+
 
 ```{r, echo=F}
 metadata %>%
-  mutate(Sample_name = str_replace_all(Sample_name,pattern = "[\\.|_]",replacement = "-")) %>% 
-  mutate(file1 = paste0(Sample_name, "_L001_R1_001.fastq"),
-         file2 = paste0(Sample_name, "_L001_R2_001.fastq")) %>%
- select(Sample_name,
+  left_join(filenames) %>% 
+  select(Sample_name,
          file1,
          file2,
          i7_Index_Name,
@@ -236,6 +248,27 @@ metadata %>%
          PrimerR,
          Locus) -> metadata
 
+```
+
+### Check that primer sequences do not include non-IUPAC characters
+
+```{r NON-IUPAC characters}
+IUAPAC.char <- read_csv(here("data_sub","IUAPAC.csv"))
+
+IUPAC.char.1 <- paste(IUAPAC.char$Nucleotide.symbol, collapse = "")
+IUPAC.char.1 <- paste0("[^",IUPAC.char.1,"]")
+
+allprimers = paste0(metadata$PrimerR, metadata$PrimerF, collapse = "")
+
+case_when(str_count(allprimers, IUPAC.char.1) > 0 ~ print("There are non-IUAPAC characters in your primers, changing them to N"))
+
+metadata %>% 
+  mutate_at(.vars = vars(starts_with("Primer")), function(x)str_replace_all(x, IUPAC.char.1, "N")) -> metadata
+
+```
+
+
+```{r}
 
 write_csv(metadata, file.path(params$output_dir,paste0( "metadata_",Sys.Date(),".csv")))
 
