@@ -41,7 +41,7 @@ ui <- fluidPage(
                             label = "Trimming length forward reads",
                             value = 200)),
         column(width = 1,
-               verbatimTextOutput("info_rev")),
+               verbatimTextOutput("info_rev",placeholder = T)),
         
         column(width = 4,
                numericInput(inputId = "trimming.length.Read2", 
@@ -115,8 +115,9 @@ server <- function(input, output) {
         content = function(file){write_csv(tibble(Folder = (dirname(input$Fastq_rev$name)),
                                                   metadata = input$metadata,
                                                   read.length1 = input$trimming.length.Read1,
-                                                  read.length2 = input$trimming.length.Read2), file)
-        # content = function(file) {
+                                                  read.length2 = input$trimming.length.Read2,
+                                                  Hash         = input$Hash), file)
+        # content = function(file) { 
         #     tibble(Input.fastqs  = unique(dirname(input$Fastq_rev)),
         #            output.folder = input$outputfolder) %>% 
         #         
