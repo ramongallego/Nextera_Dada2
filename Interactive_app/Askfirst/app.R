@@ -49,13 +49,15 @@ ui <- fluidPage(
                             value = 200))
     ),
     fluidRow(
-        column(width = 3, checkboxInput(inputId = "Hash",
+        column(width = 2, checkboxInput(inputId = "Hash",
                                         label = "Use hashing")),
         column(width = 3, fileInput(inputId = "metadata",
                                     label = "metadata file")),
-        column(width = 3, textInput(inputId = "outputfolder",
+        column(width = 2, textInput(inputId = "outputfolder",
                                     label = "output folder")),
-        column(width = 3, downloadButton("report","Generate Report"))
+        column(width = 2, downloadButton("report","Generate Report")),
+        
+        column(width = 2, downloadButton("cutadapt.wrap", "Remove primers"))
     )
         # 
         #     plotOutput("qPlot_Fwd"))
@@ -112,7 +114,7 @@ server <- function(input, output) {
     output$report <- downloadHandler(
         
         filename = "analysis.params.csv",
-        content = function(file){write_csv(tibble(Folder = (dirname(input$Fastq_rev$name)),
+        content = function(file){write_csv(tibble(Folder = (unique(dirname(input$Fastq_rev$name))),
                                                   metadata = input$metadata,
                                                   read.length1 = input$trimming.length.Read1,
                                                   read.length2 = input$trimming.length.Read2,
@@ -131,16 +133,42 @@ server <- function(input, output) {
     #             
     #             write_csv(file.path(input$outputfolder, "analysis.params.csv"))
     #         
-  
+    output$cutadapt.wrap <- downloadHandler(
+      # For PDF output, change this to "report.pdf"
+      filename = "report.html",
+      content = function(file) {
+        # Copy the report file to a temporary directory before processing it, in
+        # case we don't have write permissions to the current working dir (which
+        # can happen when deployed).
+        # tempReport <- file.path(tempdir(), "report.Rmd")
+        # file.copy("../scripts/cutadapt.wrapper.Rmd", tempReport, overwrite = TRUE)
+        dir.create(input$outputfolder)
+        write_csv (read_csv(input$metadata$datapath),
+                   path = file.path(input$outputfolder, "metadata.csv") )
+        # Set up parameters to pass to Rmd document
+        params <-  list(folder = unique(normalizePath(dirname(input$Fastq_rev$name))),
+                        metadata = file.path(normalizePath(input$outputfolder), "metadata.csv"),
+                        outputfolder = input$outputfolder )
+                                     #                      hash = hashing,
+                                     #                      original = source,
+                                     #                      cont = continuing))
+        
+        
+        # Knit the document, passing in the `params` list, and eval it in a
+        # child of the global environment (this isolates the code in the document
+        # from the code in this app).
+        rmarkdown::render("../../scripts/cutadapt.wrapper.Rmd",
+                          output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv()))
+        
+      }
+    
+    )
    
         
         
-        # render("r/dada2.Rmd", output_file = paste0(output.folder,"/dada2_report.html"),
-        #        params = list(folder = output.folder,
-        #                      fastqs = fastq.folder,
-        #                      hash = hashing,
-        #                      original = source,
-        #                      cont = continuing))
+        # 
         
       
 }

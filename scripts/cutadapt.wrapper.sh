@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-
+echo "This is the working directory"
+pwd
 # Usage bash cutadapt.wrapper.sh {folder with fastqs} {metadata_file} {output_folder}
+echo "This was the command executed"
+echo "bash cutadapt.wrapper.sh ${1} ${2} ${3}"
 MAIN_DIR="$(dirname "$0")"
 echo "${MAIN_DIR}"
-echo "THat is the directory with the scripts"
+echo "That is the directory with the scripts"
 SCRIPT_DIR="${MAIN_DIR}"/core
 for file in "${SCRIPT_DIR}"/* ; do
 	source "${file}"
