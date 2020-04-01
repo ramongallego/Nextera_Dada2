@@ -1,2 +1,2 @@
 folder,metadata,outputfolder
-/Users/ramon.gallegosimon/Projects/Nextera_Dada2/Interactive_app/Askfirst,/Users/ramon.gallegosimon/Projects/Nextera_Dada2/test/metadata.csv,/Users/ramon.gallegosimon/Projects/Nextera_Dada2/test
+../data_sub/fastqs,../data_sub/metadata.csv,../data_sub/

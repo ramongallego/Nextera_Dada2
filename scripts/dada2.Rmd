@@ -6,7 +6,7 @@ output: html_document
 params:
   folder: 
     value: ../data_sub/noprimers
-  hash: Yes
+  hash: TRUE
   trimming.length.Read1: 200
   trimming.length.Read2: 200
   metadata: output.metadata.csv
@@ -17,8 +17,7 @@ params:
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir=params$folder,
-                     base.dir = params$output_folder)
+knitr::opts_knit$set(root.dir = params$folder)
 ```
 
 ## Dada2 report
@@ -26,7 +25,7 @@ knitr::opts_knit$set(root.dir=params$folder,
 You have successfully split your libraries into a pair (or two) of fastq files per sample. Now let's import the output of demultiplex_both_fastq.sh
 
 First load the packages. And let's update the parameters we need
-```{r loading packages, echo=FALSE ,message=FALSE}
+```{r loading packages, echo=TRUE ,message=FALSE}
 
 library (tidyverse)
 library (dada2)
@@ -42,23 +41,23 @@ filt_path
 # Check if output directory exists - if not create as a subfolder of input dir
 
 if(!dir.exists(file.path(params$output.folder))){
-  dir.create(file.path(params$folder, params$output.folder))
-  output.dir <- file.path(params$folder, params$output.folder)
+  dir.create(path = file.path(params$output.folder),recursive = T)
+  output.dir <- file.path(params$output.folder)
 }else{
   output.dir <- file.path(params$output.folder)
 }
-
+output.dir
 ```
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
 
 
-sample.metadata %>% 
-  sample_n(4) %>% pull(file1) %>% 
+sample.metadata %>%
+  sample_n(4) %>% pull(file1) %>%
   plotQualityProfile(.)
 
-sample.metadata %>% 
-  sample_n(4) %>% pull(file2) %>% 
+sample.metadata %>%
+  sample_n(4) %>% pull(file2) %>%
   plotQualityProfile(.)
 
 ```
@@ -67,9 +66,9 @@ The most common Amplicon length is 302, so trimming to 200 bp each read should g
 
 ```{r dadaing}
 
-sample.metadata %>% 
+sample.metadata %>%
   mutate(filtF1 = file.path("filtered", str_replace(file1, "_L001_R1_001.fastq_sub.fastq", "_F1_filt.fastq.gz")),
-         filtR1 = file.path("filtered", str_replace(file2, "_L001_R2_001.fastq_sub.fastq", "_R1_filt.fastq.gz"))) %>% 
+         filtR1 = file.path("filtered", str_replace(file2, "_L001_R2_001.fastq_sub.fastq", "_R1_filt.fastq.gz"))) %>%
   mutate (outFs = pmap(.l= list (file1, filtF1, file2, filtR1),
                        .f = function(a, b, c, d) {
                          filterAndTrim(a,b,c,d,
@@ -103,22 +102,29 @@ seqtab.nochim.df <- as.data.frame(seqtab.nochim)
 ```
 
 
-```{r}
+```{r setting up output files}
 # Output files
   conv_file <- file.path(output.dir,"hash_key.csv")
   conv_file.fasta <- file.path(output.dir,"hash_key.fasta")
-  
+
   ASV_file <-  file.path(output.dir,"ASV_table.csv")
-# Now decide if you want hashing or not
+
+  print (conv_file)
+  print (conv_file.fasta)
+  print(ASV_file)
+```
+
+```{r Hash or not}
+  # Now decide if you want hashing or not
 if ( params$hash==TRUE)
   {
-  
+
   conv_table <- tibble( Hash = "", Sequence ="")
-  
+
   hashes <- list(NULL)
- 
+
 ######## Create the Hash key file
-  
+
   for (i in 1:ncol(seqtab.nochim.df)) {   #for each column of the dataframe
     current_seq <-colnames(seqtab.nochim.df)[i] # Take the whole sequence from each column of the dataframe
     current_hash <- digest(current_seq,algo = "sha1",serialize = F,skip = "auto") # Hash it so it is both shorter and unique
@@ -127,31 +133,31 @@ if ( params$hash==TRUE)
     colnames(seqtab.nochim.df)[i] <- current_hash
   }
   write_csv(conv_table, conv_file) # write the table into a file
-  
+
   write.fasta(sequences = as.list(conv_table$Sequence),
               names     = as.list(conv_table$Hash),
               file.out = conv_file.fasta)
 
- seqtab.nochim.df <- bind_cols(sample.metadata %>% 
+ seqtab.nochim.df <- bind_cols(sample.metadata %>%
                                 select(Sample_name, Locus),
                               seqtab.nochim.df)
 
 
-seqtab.nochim.df %>% 
+seqtab.nochim.df %>%
   pivot_longer(cols = c(- Sample_name, - Locus),
               names_to = "Hash",
-              values_to = "nReads") %>% 
+              values_to = "nReads") %>%
   filter(nReads > 0) -> current_asv
 write_csv(current_asv, ASV_file)    }else{
   #What do we do if you don't want hashes: two things - Change the header of the ASV table, write only one file
 
-   seqtab.nochim.df %>% 
+   seqtab.nochim.df %>%
   pivot_longer(cols = c(- Sample_name, - Locus),
               names_to = "Sequence",
-              values_to = "nReads") %>% 
+              values_to = "nReads") %>%
   filter(nReads > 0) -> current_asv
-write_csv(current_asv, ASV_file) 
-  
+write_csv(current_asv, ASV_file)
+
 }
 ```
 
@@ -162,15 +168,15 @@ write_csv(current_asv, ASV_file)
 
 getN <- function(x) sum(getUniques(x))
 
-output.dada2 %>% 
-  select(-file1, -file2, -filtF1, -filtR1, -errF1, -errR1, -derepF1, -derepR1) %>% 
+output.dada2 %>%
+  select(-file1, -file2, -filtF1, -filtR1, -errF1, -errR1, -derepF1, -derepR1) %>%
   mutate_at(.vars = c("dadaF1", "dadaR1", "mergers"),
-            ~ sapply(.x,getN)) %>% 
+            ~ sapply(.x,getN)) %>%
 #  pull(outFs) -> test
   mutate(input = map_dbl(outFs, ~ .x[1]),
          filtered = map_dbl(outFs, ~ .x[2]),
          tabled  = rowSums(seqtabF),
-         nonchim = rowSums(seqtab.nochim)) %>% 
+         nonchim = rowSums(seqtab.nochim)) %>%
   select(Sample_name,
          Locus,
          input,
@@ -181,18 +187,18 @@ output.dada2 %>%
          tabled,
          nonchim) -> track
 
-write_csv(track, file.path(params$output.folder,"dada2_summary.csv"))
+write_csv(track, file.path(output.dir,"dada2_summary.csv"))
 
 kable (track, align= "c", format = "html") %>%
       kable_styling(bootstrap_options= "striped", full_width = T, position = "center") %>%
-      column_spec(2, bold=T) 
-track %>% 
-  mutate_if(is.numeric, as.integer) %>% 
+      column_spec(2, bold=T)
+track %>%
+  mutate_if(is.numeric, as.integer) %>%
   pivot_longer(cols = c(-Sample_name, -Locus),
                names_to = "Step",
-               values_to = "Number of Sequences") %>% 
-  mutate (Step = fct_relevel(Step, 
-                             levels = c( "input","filtered","denoised_F" ,"denoised_R" , "merged" , "tabled", "nonchim"))) %>% 
+               values_to = "Number of Sequences") %>%
+  mutate (Step = fct_relevel(Step,
+                             levels = c( "input","filtered","denoised_F" ,"denoised_R" , "merged" , "tabled", "nonchim"))) %>%
   ggplot(aes(x = Step, y = `Number of Sequences`, group =  Sample_name, color = Sample_name)) +
   geom_line() +
   facet_wrap(~Locus) +
