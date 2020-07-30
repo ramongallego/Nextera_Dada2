@@ -185,7 +185,7 @@ metadata %>%
 if(max(occurrence.of.combos$n > 1 )){
   print("There are combinations of barcodes assigned to more than 1 sample - Please Check they have different PCR primers so you can separate them after")
   metadata %>% 
-  group_by(i5_Adapter,i7_Adapter ) %>% 
+  group_by(i5_Index_Name,i7_Index_Name ) %>% 
     slice(1) -> metadata.for.sample.sheet
   print ("Keeping the first occurence of each combo for your samplesheet")}else{metadata.for.sample.sheet <- metadata}
 ```
@@ -212,9 +212,11 @@ for (i in 1:nsamples){
   }
 
 
-write_lines(template.sample.sheet, 
+write_lines(template.sample.sheet,
             file.path(params$output_dir,paste0( "SampleSheet_",Sys.Date(),".csv")),
             sep = "\r\n")
+
+
 ```
 
 ## Fill in metadata
