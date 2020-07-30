@@ -1,2 +1,2 @@
 folder,metadata,outputfolder
-/Users/ramon.gallegosimon/Projects/Hook_and_line/Miseq.data/HL_Data,/Users/ramon.gallegosimon/Projects/Hook_and_line/Miseq.data/HL_Data/metadata.for.16S.csv,/Users/ramon.gallegosimon/Projects/Hook_and_line/Miseq.data/New16S_d
+../data_sub/fastqs,../data_sub/metadata.csv,../data_sub/

@@ -5,11 +5,11 @@ date: "1/9/2018"
 output: html_document
 params:
   folder: 
-    value: /Users/ramon.gallegosimon/Projects/Hook_and_line/Miseq.data/HL_Data
+    value: ../data_sub/noprimers
   hash: TRUE
   trimming.length.Read1: 250
   trimming.length.Read2: 250
-  metadata: metadata.for.16S.csv
+  metadata: output.metadata.csv
   output.folder: outputs
 
 ---
