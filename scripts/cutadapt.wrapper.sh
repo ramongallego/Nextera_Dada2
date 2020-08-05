@@ -57,7 +57,7 @@ fi
 
 METADATA_DIM=($( awk -F, 'END{print NR, NF}' "${SEQUENCING_METADATA}" ))
 echo "Metadata has" "${METADATA_DIM[0]}" "rows and" "${METADATA_DIM[1]}" "columns including header."
-N_SAMPLES=$( echo "${METADATA_DIM[0]}" - 1 | bc )
+N_SAMPLES=$((METADATA_DIM[0] - 1))
 echo "Expecting" "${N_SAMPLES}" "samples total."
 echo
 # Filnames
