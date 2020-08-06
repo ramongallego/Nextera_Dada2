@@ -7,8 +7,8 @@ params:
   folder: 
     value: ../data_sub/noprimers
   hash: TRUE
-  trimming.length.Read1: 250
-  trimming.length.Read2: 250
+  trimming.length.Read1: 200
+  trimming.length.Read2: 200
   metadata: output.metadata.csv
   output.folder: outputs
 
@@ -51,13 +51,14 @@ output.dir
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
 
+ifelse(nrow(sample.metadata)>4,
+       subset <- sample.metadata %>%  sample_n(4),
+       subset <- sample.metadata)
 
-sample.metadata %>%
-  sample_n(4) %>% pull(file1) %>%
+subset %>% pull(file1) %>%
   plotQualityProfile(.)
 
-sample.metadata %>%
-  sample_n(4) %>% pull(file2) %>%
+subset %>% pull(file2) %>%
   plotQualityProfile(.)
 
 ```
