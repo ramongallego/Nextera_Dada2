@@ -9,7 +9,7 @@ params:
   metadata:
     value: ../data_sub/metadata.csv
   outputfolder:
-    value: ../data_sub/
+    value: ../data_sub/test
 ---
 
 ```{r setup, include=FALSE}

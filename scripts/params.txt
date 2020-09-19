@@ -1,2 +1,2 @@
 folder,metadata,outputfolder
-../data_sub/fastqs,../data_sub/metadata.csv,../data_sub/
+../data_sub/fastqs,../data_sub/metadata.csv,../data_sub/test
