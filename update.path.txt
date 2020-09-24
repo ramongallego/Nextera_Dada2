@@ -1,0 +1,7 @@
+# WHen installing a piece of software that needs to be included in $PATH,
+# besides adding a .bash_profile in your root and running it with the PATH=new/path/to/bin
+# you have to do the same in R
+#old.path <- old_path <- Sys.getenv("PATH")
+
+Sys.setenv(PATH = paste(old_path, "path/to/package", sep = ":"))
+

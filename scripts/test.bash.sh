@@ -22,9 +22,9 @@ OUTPUTFOLDER=($(awk -F',' -v COLNUM=3 \
    ))
 echo "This is the output folder"
 echo  "${OUTPUTFOLDER}"
-# if [[ -d "${OUTPUTFOLDER}" ]]; then
-# echo "using output folder"
-# else
-# mkdir "${OUTPUTFOLDER}"
-#fi
+if [[ -d "${OUTPUTFOLDER}" ]]; then
+echo "using output folder"
+else
+mkdir "${OUTPUTFOLDER}"
+fi
 bash cutadapt.wrapper.sh "${FASTQFOLDER}" "${METADATA}" "${OUTPUTFOLDER}"
