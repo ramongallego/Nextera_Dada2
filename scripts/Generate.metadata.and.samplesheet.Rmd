@@ -190,8 +190,8 @@ if(max(occurrence.of.combos$n > 1 )){
   print ("Keeping the first occurence of each combo for your samplesheet")}else{metadata.for.sample.sheet <- metadata}
 ```
 
-
-```{r, echo = F}
+Now write the SampleSheet to a file
+```{r, echo = T}
 sample.data <- tibble (Sample_ID   = metadata.for.sample.sheet$Sample_name,
                       Sample_Plate = params$Set,
                       Sample_Well  = metadata.for.sample.sheet$Well,
