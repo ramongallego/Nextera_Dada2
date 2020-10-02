@@ -1,7 +1,7 @@
 ---
 title: "cutadapt.wrapper"
-author: "Ramon Gallego"
-date: "3/16/2020"
+author: "XX XXXX"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   folder: 

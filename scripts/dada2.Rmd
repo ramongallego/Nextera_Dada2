@@ -1,7 +1,7 @@
 ---
 title: "Dada2_report"
-author: "Ramón Gallego"
-date: "1/9/2018"
+author: "XX XXXX"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   folder: 
@@ -11,6 +11,7 @@ params:
   trimming.length.Read2: 200
   metadata: output.metadata.csv
   output.folder: outputs
+  keep.mid.files: TRUE
 
 ---
 
@@ -22,7 +23,7 @@ knitr::opts_knit$set(root.dir = params$folder)
 
 ## Dada2 report
 
-You have successfully split your libraries into a pair (or two) of fastq files per sample. Now let's import the output of demultiplex_both_fastq.sh
+You have successfully used `cutadapt` to split the .FASTQ files by locus and remove the primer sequence. Not a small feat. Now we are going to apply a denoising algorithm `DADA2`, https://github.com/benjjneb/dada2, and estimate the original sample composition. On the parameters section you have chosen a trimming length for each of the two files, whether to use Hashes or not, and a folder where to drop the output files
 
 First load the packages. And let's update the parameters we need
 ```{r loading packages, echo=TRUE ,message=FALSE}
@@ -50,14 +51,12 @@ output.dir
 ```
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
-
-
-sample.metadata %>%
-  sample_n(4) %>% pull(file1) %>%
+ifelse(nrow(sample.metadata)>4,
+       subset <- sample.metadata %>%  sample_n(4),
+       subset <- sample.metadata)
+subset %>% pull(file1) %>%
   plotQualityProfile(.)
-
-sample.metadata %>%
-  sample_n(4) %>% pull(file2) %>%
+subset %>% pull(file2) %>%
   plotQualityProfile(.)
 
 ```
@@ -67,8 +66,10 @@ The most common Amplicon length is 302, so trimming to 200 bp each read should g
 ```{r dadaing}
 
 sample.metadata %>%
-  mutate(filtF1 = file.path("filtered", str_replace(file1, "_L001_R1_001.fastq_sub.fastq", "_F1_filt.fastq.gz")),
-         filtR1 = file.path("filtered", str_replace(file2, "_L001_R2_001.fastq_sub.fastq", "_R1_filt.fastq.gz"))) %>%
+  separate(file1, into = "basename", sep= "_L001_R1", remove = F) %>% 
+  mutate(filtF1 = file.path("filtered", paste0(basename, "_F1_filt.fastq.gz")),
+         filtR1 = file.path("filtered", paste0(basename, "_R1_filt.fastq.gz"))) %>%
+  select(-basename) %>% 
   mutate (outFs = pmap(.l= list (file1, filtF1, file2, filtR1),
                        .f = function(a, b, c, d) {
                          filterAndTrim(a,b,c,d,
@@ -84,8 +85,9 @@ sample.metadata %>%
           dadaR1  = map2(derepR1,errR1, ~ dada(.x, err = .y, multithread = TRUE)),
           mergers = pmap(.l = list(dadaF1,derepF1, dadaR1,derepR1),                 # merge things
                          .f = mergePairs )) -> output.dada2
+if ( params$keep.mid.files==TRUE){
+write_rds(output.dada2, path = "output.halfway.rds")}
 
-write_rds(output.dada2, path = "output.halfway.rds")
 seqtabF <- makeSequenceTable(output.dada2$mergers)
 dim(seqtabF)
 
@@ -103,6 +105,8 @@ seqtab.nochim.df <- as.data.frame(seqtab.nochim)
 
 
 ```{r setting up output files}
+# Copy the metadata so it is all in one place
+sample.metadata %>% write_csv(file.path(output.dir,"metadata.csv"))
 # Output files
   conv_file <- file.path(output.dir,"hash_key.csv")
   conv_file.fasta <- file.path(output.dir,"hash_key.fasta")
@@ -151,7 +155,6 @@ write_csv(current_asv, ASV_file)
 ##Track the fate of all reads
 
 ```{r output_summary}
-
 getN <- function(x) sum(getUniques(x))
 
 output.dada2 %>%
@@ -174,7 +177,16 @@ output.dada2 %>%
          nonchim) -> track
 
 write_csv(track, file.path(output.dir,"dada2_summary.csv"))
+```
 
+```{r drop}
+if ( params$keep.mid.files==FALSE){
+unlink(filt_path, recursive = T)
+  }
+```
+
+
+```{r output_summary table and fig}
 kable (track, align= "c", format = "html") %>%
       kable_styling(bootstrap_options= "striped", full_width = T, position = "center") %>%
       column_spec(2, bold=T)
