@@ -5,11 +5,11 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   folder: 
-    value: ../data_sub/fastqs
+    value: /cloud/project/Nextera_Dada2/data_sub/fastqs
   metadata:
-    value: ../data_sub/metadata.csv
+    value: /cloud/project/Nextera_Dada2/data_sub/metadata.csv
   outputfolder:
-    value: ../data_sub/test
+    value: /cloud/project/test
 ---
 
 ```{r setup, include=FALSE}
@@ -34,6 +34,7 @@ write_csv( "params.txt" )
 
 
 ```
+
 ```{bash}
 cutadapt --version
 ```
