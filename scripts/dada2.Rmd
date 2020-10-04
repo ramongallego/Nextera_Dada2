@@ -152,7 +152,7 @@ write_csv(current_asv, ASV_file)
 ```
 
 
-##Track the fate of all reads
+## Track the fate of all reads
 
 ```{r output_summary}
 getN <- function(x) sum(getUniques(x))

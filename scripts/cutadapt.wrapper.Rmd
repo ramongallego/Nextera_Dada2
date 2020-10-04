@@ -20,6 +20,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This is an R Markdown document. It is just a means to passing the parameters from the metadata file into a bash script
 
+## Step0: Check the metadata colnames.
+
+The minimum info needed must have the following column names:
+
+        - Sample_name - The name that makes sense to you and your project (No spaces in the name would be better)
+        - Locus: The name of the locus you want to use (e.g. Leray_COI)
+        - PrimerF: The nucleotide sequence of the forward primer - supports IUPAC characters 
+        - PrimerR: Ditto for the reverse primer (also in 5' -> 3' direction)
+        - file1: it should match exactly the output of the Miseq.
+        - file2: Same for the second read.
+        
+Does not matter if you bring more columns - good. But these are the minimum
+
 ## Step1: Params into a file for your records
 
 ```{r}
