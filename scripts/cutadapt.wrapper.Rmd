@@ -5,11 +5,11 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   folder: 
-    value: /cloud/project/Nextera_Dada2/data_sub/fastqs
+    value: ../data_sub/fastqs
   metadata:
-    value: /cloud/project/Nextera_Dada2/data_sub/metadata.csv
+    value: ../data_sub/metadata.csv
   outputfolder:
-    value: /cloud/project/test
+    value: ../test
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +31,7 @@ The minimum info needed must have the following column names:
         - file1: it should match exactly the output of the Miseq.
         - file2: Same for the second read.
         
-Does not matter if you bring more columns - good. But these are the minimum
+Does not matter if you youbring more columns - good. But these are the minimum
 
 ## Step1: Params into a file for your records
 
