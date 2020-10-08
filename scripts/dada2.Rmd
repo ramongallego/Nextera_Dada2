@@ -200,8 +200,7 @@ kable (track, align= "c", format = "html") %>%
       kable_styling(bootstrap_options= "striped", full_width = T, position = "center") %>%
       column_spec(2, bold=T)
 
-track %>% 
-  filter (Sample_name == "197_S2")
+
 ```
 
 
