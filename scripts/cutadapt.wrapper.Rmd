@@ -1,7 +1,7 @@
 ---
 title: "cutadapt.wrapper"
-author: "Ramon Gallego"
-date: "3/16/2020"
+author: "XX XXXX"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: html_document
 params:
   folder: 
@@ -9,7 +9,7 @@ params:
   metadata:
     value: ../data_sub/metadata.csv
   outputfolder:
-    value: ../data_sub/
+    value: ../test
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +19,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Cutadapt wrapper
 
 This is an R Markdown document. It is just a means to passing the parameters from the metadata file into a bash script
+
+## Step0: Check the metadata colnames.
+
+The minimum info needed must have the following column names:
+
+        - Sample_name - The name that makes sense to you and your project (No spaces in the name would be better)
+        - Locus: The name of the locus you want to use (e.g. Leray_COI)
+        - PrimerF: The nucleotide sequence of the forward primer - supports IUPAC characters 
+        - PrimerR: Ditto for the reverse primer (also in 5' -> 3' direction)
+        - file1: it should match exactly the output of the Miseq.
+        - file2: Same for the second read.
+        
+Does not matter if you youbring more columns - good. But these are the minimum
 
 ## Step1: Params into a file for your records
 
@@ -34,6 +47,10 @@ tibble(values = as.character(params), names = as.character(names(params))) %>%
 write_csv( "params.txt" )
 
 
+```
+
+```{bash}
+cutadapt --version
 ```
 
 
