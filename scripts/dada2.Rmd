@@ -51,11 +51,15 @@ output.dir
 ```
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
+
+
 ifelse(nrow(sample.metadata)>4,
        subset <- sample.metadata %>%  sample_n(4),
        subset <- sample.metadata)
+
 subset %>% pull(file1) %>%
   plotQualityProfile(.)
+
 subset %>% pull(file2) %>%
   plotQualityProfile(.)
 
@@ -87,6 +91,7 @@ sample.metadata %>%
                          .f = mergePairs )) -> output.dada2
 if ( params$keep.mid.files==TRUE){
 write_rds(output.dada2, path = "output.halfway.rds")}
+
 
 seqtabF <- makeSequenceTable(output.dada2$mergers)
 dim(seqtabF)
@@ -122,11 +127,15 @@ sample.metadata %>% write_csv(file.path(output.dir,"metadata.csv"))
 if ( params$hash==TRUE)
   {
   conv_table <- tibble( Hash = "", Sequence ="")
+
+
    map_chr (colnames(seqtab.nochim.df), ~ digest(.x, algo = "sha1", serialize = F, skip = "auto")) -> Hashes
   conv_table <- tibble (Hash = Hashes,
                         Sequence = colnames(seqtab.nochim.df))
   
   colnames(seqtab.nochim.df) <- Hashes
+
+
   
   write_csv(conv_table, conv_file) # write the table into a file
   write.fasta(sequences = as.list(conv_table$Sequence),
@@ -190,6 +199,13 @@ unlink(filt_path, recursive = T)
 kable (track, align= "c", format = "html") %>%
       kable_styling(bootstrap_options= "striped", full_width = T, position = "center") %>%
       column_spec(2, bold=T)
+
+track %>% 
+  filter (Sample_name == "197_S2")
+```
+
+
+```{r output_summary plot}
 track %>%
   mutate_if(is.numeric, as.integer) %>%
   pivot_longer(cols = c(-Sample_name, -Locus),
@@ -199,7 +215,7 @@ track %>%
                              levels = c( "input","filtered","denoised_F" ,"denoised_R" , "merged" , "tabled", "nonchim"))) %>%
   ggplot(aes(x = Step, y = `Number of Sequences`, group =  Sample_name, color = Sample_name)) +
   geom_line() +
-  facet_wrap(~Locus) +
+  facet_wrap(~Sample_name) +
   guides(color = "none")
 
 ```

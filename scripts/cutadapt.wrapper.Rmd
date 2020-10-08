@@ -42,7 +42,8 @@ library(tidyverse)
 
 tibble(values = as.character(params), names = as.character(names(params))) %>% 
   pivot_wider(names_from = names,
-              values_from = values) %>% 
+              values_from = values) %>%
+  select(folder, metadata, outputfolder) %>% 
 write_csv( "params.txt" )
 
 
