@@ -1,0 +1,9 @@
+Argument,value
+folder,/home/rgallegosimon/test/noprimers/
+  hash, TRUE
+  trimming.length.Read1, 220
+  trimming.length.Read2, 150
+  metadata, output.metadata.csv
+  output.folder, outputs
+  keep.mid.files, TRUE
+  merge.overlap, 10
