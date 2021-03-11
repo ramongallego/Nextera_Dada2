@@ -16,6 +16,7 @@ done
 INPUT_DIR=${1}
 #primers_file=${2}
 # Make Output Folder and logfile
+mkdir "${3}"
 OUTPUT_DIR=${3}/noprimers
 mkdir "${OUTPUT_DIR}"
 LOGFILE="${OUTPUT_DIR}"/log.cutadapt.txt

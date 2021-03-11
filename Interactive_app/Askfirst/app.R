@@ -9,6 +9,7 @@
 
 library(shiny)
 library(tidyverse)
+library(dada2)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -78,6 +79,8 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  options(shiny.maxRequestSize=300*1024^2)
 
     output$qPlot_Fwd <- renderPlot({
         inFile <- input$Fastq_fwd
@@ -157,10 +160,10 @@ server <- function(input, output) {
         # Knit the document, passing in the `params` list, and eval it in a
         # child of the global environment (this isolates the code in the document
         # from the code in this app).
-        rmarkdown::render("../../scripts/cutadapt.wrapper.Rmd",
-                          output_file = file,
-                          params = params,
-                          envir = new.env(parent = globalenv()))
+        # rmarkdown::render("../../scripts/cutadapt.wrapper.Rmd",
+        #                   output_file = file,
+        #                   params = params,
+        #                   envir = new.env(parent = globalenv()))
         
       }
     

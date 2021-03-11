@@ -1,0 +1,12 @@
+name: PlotFASTQ
+title: PlotFASTQ
+username:
+account: rgallego
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3743118
+bundleId: 4306020
+url: https://rgallego.shinyapps.io/PlotFASTQ/
+when: 1614968659.35298
+asMultiple: FALSE
+asStatic: FALSE
