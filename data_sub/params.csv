@@ -1,9 +1,56 @@
-Argument,value
-folder,/home/rgallegosimon/test/noprimers/
-  hash, TRUE
-  trimming.length.Read1, 220
-  trimming.length.Read2, 150
-  metadata, output.metadata.csv
-  output.folder, outputs
-  keep.mid.files, TRUE
-  merge.overlap, 10
+
+R version 4.0.3 (2020-10-10) -- "Bunny-Wunnies Freak Out"
+Copyright (C) 2020 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## If you don't need the report, and just want to execute the dad2.Rmd script 
+> ## with a params file 
+> ## Run this script with 
+> ## Rscript skeleton_dada2.r params.txt
+> ## For the params file, make a copy of the /params.example.txt
+> 
+> #!/usr/bin/env Rscript
+> args = commandArgs(trailingOnly=TRUE)
+> 
+> library (tidyverse)
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.3.3     ✔ purrr   0.3.4
+✔ tibble  3.0.6     ✔ dplyr   1.0.4
+✔ tidyr   1.1.2     ✔ stringr 1.4.0
+✔ readr   1.4.0     ✔ forcats 0.5.1
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+> library (dada2)
+Loading required package: Rcpp
+> library (digest)
+> library (seqinr)
+
+Attaching package: ‘seqinr’
+
+The following object is masked from ‘package:dplyr’:
+
+    count
+
+> 
+> 
+> # test if there is at least one argument: if not, return an error
+> if (length(args)==0) {
++   stop("At least one argument must be supplied (input file).n", call.=FALSE)
++ } else{params <- read_csv(args[1])}
+Error: At least one argument must be supplied (input file).n
+Execution halted

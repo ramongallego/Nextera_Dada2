@@ -156,4 +156,19 @@ Locus_"${LOCUS[i]}"_"${short_file_R}".fastq >> "${OUTPUT_METADATA}"
 
 printf "\n" >> "${OUTPUT_METADATA}"
 
+
+
+
  done
+
+echo  "
+Argument,value
+folder,"${OUTPUT_DIR}"
+  hash, TRUE 
+  trimming.length.Read1, 220 
+  trimming.length.Read2, 150 
+  metadata, output.metadata.csv 
+  output.folder, output
+  keep.mid.files, TRUE
+  merge.overlap, 10
+"  > "${OUTPUT_DIR}"/params.csv

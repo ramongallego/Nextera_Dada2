@@ -57,7 +57,7 @@ sample.metadata %>%
                                            compress=TRUE, multithread=TRUE ) %>% 
                                as.data.frame()
                            } )) %>% 
-  filter (outFs$reads.out > 0)  %>% # Keep only cases in which there are sequences passing filter
+  filter (outFs$reads.out > 100)  %>% # Keep only cases in which there arest least 100  sequences passing filter
   mutate(
     errF1 = map(filtF1, ~ learnErrors(.x, multithread=TRUE,verbose = 0)),     # Calculate errors
     errR1 = map(filtR1, ~ learnErrors(.x, multithread=TRUE,verbose = 0)),
