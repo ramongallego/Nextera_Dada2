@@ -118,7 +118,9 @@ if ( params$hash==TRUE)
   write.fasta(sequences = as.list(conv_table$Sequence),
               names     = as.list(conv_table$Hash),
               file.out = conv_file.fasta)
-  seqtab.nochim.df <- bind_cols(sample.metadata %>%
+  # dangerous use of bind_cols - use outputdada2 for.now
+  
+  seqtab.nochim.df <- bind_cols(output.dada2 %>%
                                   select(Sample_name, Locus),
                                 seqtab.nochim.df)
   seqtab.nochim.df %>%
@@ -129,6 +131,8 @@ if ( params$hash==TRUE)
   write_csv(current_asv, ASV_file)    }else{
     #What do we do if you don't want hashes: two things - Change the header of the ASV table, write only one file
     seqtab.nochim.df %>%
+      bind_cols(output.dada2 %>%
+                  select(Sample_name, Locus)) %>% 
       pivot_longer(cols = c(- Sample_name, - Locus),
                    names_to = "Sequence",
                    values_to = "nReads") %>%
