@@ -48,6 +48,9 @@ if(!dir.exists(file.path(params$output.folder))){
   output.dir <- file.path(params$output.folder)
 }
 output.dir
+# Write the parameters in a file to the output dir
+
+tibble(Parameters = names(params), Values = unlist(params)) %>% write_csv(file.path(output.dir,paste0("parameters_", Sys.Date(), ".csv")))
 ```
 
 ```{r check quality trim point, message=FALSE, warning=FALSE}
