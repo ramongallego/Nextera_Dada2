@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+scripts/r/*.html
+.DS_Store
+scripts/.DS_Store
+scripts/r/r.Rproj
+data/*
+data_sub/*.fastq
