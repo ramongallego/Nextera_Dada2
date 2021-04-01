@@ -27,4 +27,11 @@ echo "using output folder"
 else
 mkdir "${OUTPUTFOLDER}"
 fi
-bash cutadapt.wrapper.sh "${FASTQFOLDER}" "${METADATA}" "${OUTPUTFOLDER}"
+
+MINLENGTH=($(awk -F',' -v COLNUM=4 \
+  'NR>1 {  print $COLNUM }' ${1} \ 
+  ))
+echo "Using the minimum length"
+echo  "${MINLENGTH}"
+  
+bash cutadapt.wrapper.sh "${FASTQFOLDER}" "${METADATA}" "${OUTPUTFOLDER}" "${MINLENGTH}"

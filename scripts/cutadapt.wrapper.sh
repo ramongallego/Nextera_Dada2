@@ -3,7 +3,7 @@ echo "This is the working directory"
 pwd
 # Usage bash cutadapt.wrapper.sh {folder with fastqs} {metadata_file} {output_folder}
 echo "This was the command executed"
-echo "bash cutadapt.wrapper.sh ${1} ${2} ${3}"
+echo "bash cutadapt.wrapper.sh ${1} ${2} ${3} ${4}"
 MAIN_DIR="$(dirname "$0")"
 echo "${MAIN_DIR}"
 echo "That is the directory with the scripts"
@@ -19,6 +19,9 @@ INPUT_DIR=${1}
 OUTPUT_DIR=${3}/noprimers
 mkdir "${OUTPUT_DIR}"
 LOGFILE="${OUTPUT_DIR}"/log.cutadapt.txt
+
+# Capture Minimum sequence length
+MIN_LENGTH=${4}
 
 # Capture metadata_file
 SEQUENCING_METADATA=${2}
@@ -140,6 +143,7 @@ cutadapt -g "${PRIMER1[i]}" \
          -G "${PRIMER2[i]}" \
          -o "${OUTPUT_FILE_F}" \
          -p "${OUTPUT_FILE_R}" \
+         -m "${MIN_LENGTH}" \
          "${INPUT_DIR}"/"${FILE1[i]}" "${INPUT_DIR}"/"${FILE2[i]}"  2>> "${LOGFILE}"
 
          #-o "${OUTPUT_DIR}"/Locus_"${LOCUS}"_"${short_file_F}".fastq \
