@@ -56,7 +56,9 @@ sample.metadata %>%
                                            maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
                                            compress=TRUE, multithread=TRUE ) %>% 
                                as.data.frame()
-                           } )) %>% 
+                           } )) -> after.filter
+ write_rds(after.filter, file = "after.filter.rds")
+after.filter %>% 
   filter (outFs$reads.out > 100)  %>% # Keep only cases in which there arest least 100  sequences passing filter
   mutate(
     errF1 = map(filtF1, ~ learnErrors(.x, multithread=TRUE,verbose = 0)),     # Calculate errors
