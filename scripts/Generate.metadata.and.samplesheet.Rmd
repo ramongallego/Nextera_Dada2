@@ -5,11 +5,11 @@ date: "11/8/2019"
 output: html_document
 params: 
   Assay: 
-    value: "Nextera XT"
+    value: "UDI"
     input: select
     choices: [Nextera XT, UDI]
   Index_Adapters:
-    value:  "Nextera XT Index Kit (96 Indexes 384 Samples)"
+    value:  "UDI 386 Samples"
     input: select
     choices: [Nextera XT Index Kit (96 Indexes 384 Samples),
     UDI 386 Samples]
@@ -151,14 +151,15 @@ Make the check that all the indices are present
 If using UDIs, two options: If you used the default position of the UDIs on their plates, then use the fields `Well` and `Set` to do the matching. Check that the Sets are in the same format in both datasets
 
 ```{r UDI Match}
-if(params$Assay == "UDI" & params$Match_with_well == TRUE){
-  test <- summary(unique(init.metadata$Set) %in% 1:4)
+if(params$Assay == "UDI" & params$Match_with_well == "Yes"){
+  test <-  nrow(inner_join(init.metadata, UDI_Nextera,by = c("Well", "Set"))) == nrow(left_join(init.metadata, UDI_Nextera,by = c("Well", "Set")))
 test
   
-   if (is.na(test["FALSE"]) ) {
+   if (test ) {
   left_join(init.metadata, UDI_Nextera, by = c("Well", "Set")) -> metadata
     } else{
-
+    # Is it a problem with the set names?
+  if (!unique(init.metadata$Set) %in% 1:4){
     # Sets are also known as ABCD
     print("Set values are not 1,2,3,4")
     print("Assuming this is what you meant - Check if not")
@@ -168,7 +169,7 @@ test
             distinct())
 
     init.metadata %>%
-      mutate(Set = as.numeric(as.factor(Set))) -> init.metadata
+      mutate(Set = as.numeric(as.factor(Set))) -> init.metadata}
 
     # Check if well had a 0 in front of number for cols 1-9 (A1 or A01)
 

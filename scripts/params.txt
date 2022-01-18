@@ -1,2 +1,2 @@
 folder,metadata,outputfolder
-../data_sub/fastqs,../data_sub/metadata.csv,../data_sub/test
+/Volumes/Universal/sequences/PB09202019-Dap544,/Volumes/Universal/sequences/PB09202019-Dap544/metadata.csv,/Volumes/Universal/Calcofi_RunBig
