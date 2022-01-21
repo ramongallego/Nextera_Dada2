@@ -4,8 +4,20 @@ author: "Ramon Gallego"
 date: "11/8/2019"
 output: html_document
 params: 
-  Assay: "Nextera XT"
-  Index_Adapters: "Nextera XT Index Kit (96 Indexes 384 Samples)"
+  Assay: 
+    value: "UDI"
+    input: select
+    choices: [Nextera XT, UDI]
+  Index_Adapters:
+    value:  "UDI 386 Samples"
+    input: select
+    choices: [Nextera XT Index Kit (96 Indexes 384 Samples),
+    UDI 386 Samples]
+  Match_with_well:
+    value:  "Yes"
+    label: "Using default Well"
+    choices: [Yes, No]
+    input: select  
   Cycles_per_pairend: 301
   Set: 1
   input.metadata: 
@@ -36,12 +48,14 @@ It creates the Illumina Sample sheet and the `metadata.csv` file that you need f
 You need an input file with at least the following columns:
 
   - Sample_name: Avoid spaces - for compatibility with MiSeq's sample sheet, use hyphen "-" instead of underscores "_" or full stops "."
-  - Well:  in the 96-well plate used for the Nextera reaction. 
+  - Well:  in the 96-well plate used for the Nextera reaction. If you are using UDI indices, and select the option `Matching with well`,  then this field MUST match that of the UDI plate you are using.
+  - Set: Use A,B,C,D or 1,2,3,4. Crucial for the UDI plate
   - PrimerF: using IUPAC wildcard character
   - PrimerR: ditto
   - Locus: Name of the locus, again without spaces.
-  - i7_Index_Name: Adapter used to identify samples. Format is N7XX
-  - i5_Index_Name: Adapter used to identify samples. Format is N5XX
+  - i7_Index_Name: Adapter used to identify samples. Format is N7XX for the Nextera. 
+  - i5_Index_Name: Adapter used to identify samples. Format is N5XX for the Nextera.
+  - UDI_Index_Name: Adapter used to identify samples with the UDI. Format is  UDPXXXX
 
 ## Load the Illumina adapters
 
@@ -51,6 +65,7 @@ Nextera_Adapters_i7 <- read_csv(here("data_sub","Nextera_adapters_i7.csv"))
 
 Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) 
 
+UDI_Nextera <- read_csv(here("data_sub", "Dual_indices_Adapters.csv"))
 ```
 
 ## Loading the metadata you want to sequence
@@ -65,61 +80,128 @@ init.metadata
 
 ### Check that the metadata has all needed fields
 
-```{r Check metadata}
+```{r Check metadata, echo=F, include=T}
 
-init.metadata %>% 
-  rownames_to_column("Sample_number") %>% 
-  mutate_all(as.character) %>% 
-  pivot_longer(-Sample_number, names_to = "Variable", values_to = "Value") %>% 
-  summarise(Sample_name = case_when(sum(str_detect(Variable, "Sample")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent"),
-         Well        = case_when(sum(str_detect(Variable, "Well")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent"),
-         PrimerF    = case_when(sum(str_detect(Variable, "PrimerF")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent"),
-         PrimerR    = case_when(sum(str_detect(Variable, "PrimerR")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent"),
-         
-         i5_Adapter  = case_when(sum(str_detect(Variable, "i5_Index_Name")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent"),
-         i7_Adapter  = case_when(sum(str_detect(Variable, "i7_Index_Name")) > 0 ~ "Present",
-                                 TRUE                                    ~ "Absent")) -> Checks
+ reqs <-  c("Sample_name", 
+        "Well",
+        "PrimerF",
+        "PrimerR",
+        "Locus")
+
+
+        
+
+if(params$Assay == "UDI" & params$Match_with_well == TRUE){
+  reqs <- c(reqs,        "Set") } else {
+    
+if(params$Assay == "UDI" & params$Match_with_well == FALSE) { 
+       reqs <- c(reqs,
+        "Set",
+        "UDI_Index_Name") } else{
+if(params$Assay != "UDI"){
+      
+      reqs <- c(reqs,
+                "i5_Index_Name",
+                "i7_Index_Name")
+      
+    }
+    }
+}
+  if (sum(reqs %in% colnames(init.metadata)) < length(reqs)  ){
+    message <- cat(paste(reqs, collapse = '\n'))
+    knitr::knit_exit(append = paste0(" ERROR: Initial metadata is missing some of the key column names:
+                                     ",
+                                     paste(reqs, collapse = '\n'),
+                                     "
+                                     Change the column names / add the infromation to your csv file",
+                                     sep = '\n' ))
+  }
   
-
-
-if(sum(str_detect(Checks,"Absent")) > 0){ knitr::knit_exit(append = "## ERROR: Initial metadata is missing some of the key column names: 
-
-                                                           - Sample_name
-                                                           - Well
-                                                           - PrimerF
-                                                           - PrimerR
-                                                           - Plate
-                                                           - i5_Index_Name
-                                                           - i7_Index_Name
-                                                           
-                                                           ### Change the column names / add the infromation to your csv file")}
 
 ```
 The i5 and i7 indices can start by  either N, S, or H. But the sequence is the same. Let's make sure that they are compatible with the Nextera Indices file
 
-```{r}
 
+# Adding Indices and Sequences
+
+If using Nextera - Find the Index you used and adding the sequences for the SampleSheet.
+
+```{r Nexter1}
+if(params$Assay != "UDI"){
+  
+  # indices are sometimes denoted as NXXX or SXXX - But the numbvers are all the same - change to NXXX
 init.metadata %>% 
   mutate(i5_Index_Name = str_replace(i5_Index_Name, "^[EHNS]", "N"),
          i7_Index_Name = str_replace(i7_Index_Name, "^[HN]", "N")) -> init.metadata
+  # Check that all samples provided have a sequence
+  case_when(nrow(anti_join(init.metadata, Nextera_Adapters_i5)) + nrow(anti_join(init.metadata, Nextera_Adapters_i7)) == 0 ~ "All indices present in the  dataset",
+           # == 0 ~ "Pass i7",
+          TRUE                                                     ~ "Either some of the i5 or the i7 indices are not present in the Nextera Indices list - That will result in NAs in the final Sample Sheet")
+  # Merge
+  init.metadata %>% 
+  left_join(Nextera_Adapters_i7) %>% 
+  left_join(Nextera_Adapters_i5) -> metadata
+  
+  }
 
 ```
 
 Make the check that all the indices are present
 
-```{r}
+If using UDIs, two options: If you used the default position of the UDIs on their plates, then use the fields `Well` and `Set` to do the matching. Check that the Sets are in the same format in both datasets
 
-case_when(nrow(anti_join(init.metadata, Nextera_Adapters_i5)) + nrow(anti_join(init.metadata, Nextera_Adapters_i7)) == 0 ~ "All indices present in the  dataset",
-           # == 0 ~ "Pass i7",
+```{r UDI Match}
+if(params$Assay == "UDI" & params$Match_with_well == "Yes"){
+  test <-  nrow(inner_join(init.metadata, UDI_Nextera,by = c("Well", "Set"))) == nrow(left_join(init.metadata, UDI_Nextera,by = c("Well", "Set")))
+test
+  
+   if (test ) {
+  left_join(init.metadata, UDI_Nextera, by = c("Well", "Set")) -> metadata
+    } else{
+    # Is it a problem with the set names?
+  if (!unique(init.metadata$Set) %in% 1:4){
+    # Sets are also known as ABCD
+    print("Set values are not 1,2,3,4")
+    print("Assuming this is what you meant - Check if not")
+
+    kable(tibble(Metadata.Set = init.metadata$Set,
+                 UDI.Set      = as.numeric(as.factor(init.metadata$Set))) %>%
+            distinct())
+
+    init.metadata %>%
+      mutate(Set = as.numeric(as.factor(Set))) -> init.metadata}
+
+    # Check if well had a 0 in front of number for cols 1-9 (A1 or A01)
+
+    if(sum(str_detect(init.metadata$Well, pattern = "[A-Z]0")) > 0){
+
+      print("Found some 0s in the Wells before column 10 - fixing that (Changing A01 to A1). Check if unsure")
+
+    init.metadata %>%
+      separate(Well, into = c("Row", "Column"), sep = 1, convert = T) %>%
+      unite(Row, Column, col = "Well", sep = "") -> init.metadata
+    }
+
+
+    left_join(init.metadata, UDI_Nextera, by = c("Well", "Set")) -> metadata
+
+    }
+
+
+}
+
+# If you provided the UDIs identifiers, then do an easier joint
+
+if(params$Assay == "UDI" & params$Match_with_well == FALSE){
+
+   case_when(nrow(anti_join(init.metadata, UDI_Nextera, by = "UDI_Index_Name"))  == 0 ~ "All indices present in the  dataset",
           TRUE                                                     ~ "Either some of the i5 or the i7 indices are not present in the Nextera Indices list - That will result in NAs in the final Sample Sheet")
 
-```
+  left_join(init.metadata, UDI_Nextera %>% select(-Set),by = "UDI_Index_Name" ) -> metadata
 
+
+}
+```
 
 
 ## Load the Illumina SampleSheet template
@@ -148,15 +230,6 @@ data.header <- str_which(template.sample.sheet, "^Sample_ID")
 
 
 
-## Merge metadata with illumina adapters
-
-```{r merging}
-
-init.metadata %>% 
-  left_join(Nextera_Adapters_i7) %>% 
-  left_join(Nextera_Adapters_i5) -> metadata
-
-```
 
 ## Fill Illumina SampleSheet
 
@@ -164,7 +237,7 @@ In the case where there are many loci represented on each sample, usually you ha
 
 ### Parameters that refer to the whole sequencing run
 
-These include date of analysis, 
+These include date of analysis,
 
 ```{r}
 template.sample.sheet[date.row] <- paste0("Date,",params$date)
@@ -178,37 +251,46 @@ Then with the rest of the dataset - collapsing first by primers
 
 ```{r collapse by primer}
 
-metadata %>% 
-  group_by( i5_Index_Name,i7_Index_Name ) %>% 
+metadata %>%
+  group_by( Bases_for_Sample_Sheet_i5,Bases_for_Sample_Sheet_i7 ) %>%
   tally() -> occurrence.of.combos
 
-if(max(occurrence.of.combos$n > 1 )){
+if(max(occurrence.of.combos$n) > 1 ){
   print("There are combinations of barcodes assigned to more than 1 sample - Please Check they have different PCR primers so you can separate them after")
-  metadata %>% 
-  group_by(i5_Index_Name,i7_Index_Name ) %>% 
+  metadata %>%
+  group_by(Bases_for_Sample_Sheet_i5,Bases_for_Sample_Sheet_i7 ) %>%
     slice(1) -> metadata.for.sample.sheet
   print ("Keeping the first occurence of each combo for your samplesheet")}else{metadata.for.sample.sheet <- metadata}
 ```
 
 Now write the SampleSheet to a file
 ```{r, echo = T}
+
+Sets <- params$Set
+
+if(params$Assay == "UDI"){
+   metadata.for.sample.sheet$i7_Index_Name <- metadata.for.sample.sheet$UDI_Index_Name
+   metadata.for.sample.sheet$i5_Index_Name <- metadata.for.sample.sheet$UDI_Index_Name
+   Sets <- metadata.for.sample.sheet$Set
+}
+
 sample.data <- tibble (Sample_ID   = metadata.for.sample.sheet$Sample_name,
-                      Sample_Plate = params$Set,
+                      Sample_Plate = Sets,
                       Sample_Well  = metadata.for.sample.sheet$Well,
                       I7_Index_ID  = metadata.for.sample.sheet$i7_Index_Name,
                       index        = metadata.for.sample.sheet$Bases_for_Sample_Sheet_i7,
                       I5_Index_ID  = metadata.for.sample.sheet$i5_Index_Name,
                       index2       = metadata.for.sample.sheet$Bases_for_Sample_Sheet_i5,
-                      Sample_Project = "", 
-                      Description = "") 
+                      Sample_Project = "",
+                      Description = "")
 
 
 nsamples <- nrow(sample.data)
 template.sample.sheet <- template.sample.sheet[1:data.header]
 for (i in 1:nsamples){
-  
-  template.sample.sheet[i+data.header] <- paste(sample.data[i,], collapse = ",") 
-  
+
+  template.sample.sheet[i+data.header] <- paste(sample.data[i,], collapse = ",")
+
   }
 
 
@@ -228,18 +310,24 @@ We are going to assume that the Illumina always returns files with the format `S
 
 ```{r}
 
-sample.data %>% 
+sample.data %>%
   mutate(Sample_name = str_replace_all(Sample_ID,pattern = "[\\.|_]",replacement = "-")) %>%
-  rownames_to_column("Sample_number") %>% 
+  rownames_to_column("Sample_number") %>%
   mutate(file1 = paste0(Sample_name, "_S", Sample_number, "_L001_R1_001.fastq"),
-         file2 = paste0(Sample_name, "_S", Sample_number, "_L001_R2_001.fastq")) %>% 
+         file2 = paste0(Sample_name, "_S", Sample_number, "_L001_R2_001.fastq")) %>%
   select(i7_Index_Name = I7_Index_ID, i5_Index_Name = I5_Index_ID, file1, file2) -> filenames
 ```
 
 
 ```{r, echo=F}
+
+if(params$Assay == "UDI"){
+   metadata$i7_Index_Name <- metadata$UDI_Index_Name
+   metadata$i5_Index_Name <- metadata$UDI_Index_Name
+}
+
 metadata %>%
-  left_join(filenames) %>% 
+  left_join(filenames, by = c("i7_Index_Name","i5_Index_Name" )) %>%
   select(Sample_name,
          file1,
          file2,
@@ -264,7 +352,7 @@ allprimers = paste0(metadata$PrimerR, metadata$PrimerF, collapse = "")
 
 case_when(str_count(allprimers, IUPAC.char.1) > 0 ~ print("There are non-IUAPAC characters in your primers, changing them to N"))
 
-metadata %>% 
+metadata %>%
   mutate_at(.vars = vars(starts_with("Primer")), function(x)str_replace_all(x, IUPAC.char.1, "N")) -> metadata
 
 ```

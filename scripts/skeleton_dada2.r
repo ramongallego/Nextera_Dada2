@@ -56,8 +56,13 @@ sample.metadata %>%
                                            maxN=0, maxEE=c(Inf,Inf), truncQ=2, rm.phix=TRUE,
                                            compress=TRUE, multithread=TRUE ) %>% 
                                as.data.frame()
-                           } )) %>% 
-  filter (outFs$reads.out > 1000)  %>% # Keep only cases in which there arest least 100  sequences passing filter
+
+                         
+                           } )) -> after.filter
+ write_rds(after.filter, file = "after.filter.rds")
+after.filter %>% 
+  filter (outFs$reads.out > 100)  %>% # Keep only cases in which there arest least 100  sequences passing filter
+
   mutate(
     errF1 = map(filtF1, ~ learnErrors(.x, multithread=TRUE,verbose = 0)),     # Calculate errors
     errR1 = map(filtR1, ~ learnErrors(.x, multithread=TRUE,verbose = 0)),
