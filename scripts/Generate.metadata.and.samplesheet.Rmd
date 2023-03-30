@@ -7,12 +7,12 @@ params:
   Assay: 
     value: "UDI"
     input: select
-    choices: [Nextera XT, UDI]
+    choices: [Nextera XT, UDI, UDI_NextFlex]
   Index_Adapters:
     value:  "UDI 386 Samples"
     input: select
     choices: [Nextera XT Index Kit (96 Indexes 384 Samples),
-    UDI 386 Samples]
+    UDI 386 Samples, UDI_NextFlex]
   Match_with_well:
     value:  "Yes"
     label: "Using default Well"
@@ -66,6 +66,8 @@ Nextera_Adapters_i7 <- read_csv(here("data_sub","Nextera_adapters_i7.csv"))
 Nextera_Adapters_i5 <- read_csv(here("data_sub","Nextera_adapters_i5.csv")) 
 
 UDI_Nextera <- read_csv(here("data_sub", "Dual_indices_Adapters.csv"))
+
+UDI_NextFlex <- read_csv(here("data_sub", "next_flex_barcodes.csv"))
 ```
 
 ## Loading the metadata you want to sequence
@@ -98,12 +100,15 @@ if(params$Assay == "UDI" & params$Match_with_well == FALSE) {
        reqs <- c(reqs,
         "Set",
         "UDI_Index_Name") } else{
+if(params$Assay == "UDI_NextFlex"){
+     reqs <- c(reqs,
+        "UDI_Index_Name") } else{
 if(params$Assay != "UDI"){
       
       reqs <- c(reqs,
                 "i5_Index_Name",
                 "i7_Index_Name")
-      
+} 
     }
     }
 }
@@ -127,7 +132,7 @@ The i5 and i7 indices can start by  either N, S, or H. But the sequence is the s
 If using Nextera - Find the Index you used and adding the sequences for the SampleSheet.
 
 ```{r Nexter1}
-if(params$Assay != "UDI"){
+if(params$Assay == "Nextera XT"){
   
   # indices are sometimes denoted as NXXX or SXXX - But the numbvers are all the same - change to NXXX
 init.metadata %>% 
@@ -201,6 +206,18 @@ if(params$Assay == "UDI" & params$Match_with_well == FALSE){
 
 
 }
+
+if(params$Assay == "UDI_NextFlex" ){
+
+   case_when(nrow(anti_join(init.metadata, UDI_NextFlex, by = "UDI_Index_Name"))  == 0 ~ "All indices present in the  dataset",
+          TRUE                                                     ~ "Either some of the indices are not present in the NextFlex Indices list - That will result in NAs in the final Sample Sheet")
+
+  left_join(init.metadata, UDI_NextFlex ,by = "UDI_Index_Name" ) -> metadata
+
+
+}
+
+
 ```
 
 
